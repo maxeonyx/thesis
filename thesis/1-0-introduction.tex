@@ -1,0 +1,32 @@
+\chapter{Introduction}
+\label{C:intro}
+
+This thesis describes the research I have done, which is at the intersection of two areas: Deep Learning and Computer Graphics.
+
+In this thesis:
+\begin{enumerate}
+    \item I create a proof of concept machine learning application for a problem in computer graphics. I chose to focus on hand motion prediction.
+    \item I experiment with Transformer models and understand them in depth.
+\end{enumerate}
+
+\section{Motivation}
+\label{s:motivation}
+The problem domain I focused on -- hand motion prediction -- is a sequence prediction problem, which are  the general kind of task that transformer models are used on. To this end, I hoped to find that these two motivations would feed back into each other as I worked -- the application providing direction for the more general / theoretical research, and the insights gained from the more general research contributing back to better solutions for the problem domain.
+
+\subsection{Why focus on hand motion?}
+\label{ss:why-hand-motion}
+
+Whenever a moving virtual character appears in an animated film or a video game, someone had to spend the time to specify the angles of all the joints across all the frames. Fortunately is not necessary to lay out every single frame, because animation tools used for both games and film production make use of interpolation techniques between key-frames, but artists must still specify many joints, over many key-frames, over many different kinds of animation.
+
+For realistic human characters this work can be thought of as divided into three parts, each involving a similar amount of work:
+\begin{itemize}
+    \item Facial animation -- animating the muscles of the face when a character is talking or otherwise making facial expressions.
+    \item Hand animation -- animating the fingers and wrists when a character making gestures or manipulating objects.
+    \item Body animation (also simply called character animation) -- animating the rest of the body, e.g. the legs, arms, neck and spine when a character is walking, dancing, etc.
+\end{itemize}
+
+\subsection{Why focus on transformers?}
+\label{ss:why-transformers}
+
+
+\section{Previous Work}

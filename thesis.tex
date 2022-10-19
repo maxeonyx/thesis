@@ -1,0 +1,135 @@
+\documentclass[12pt, a4paper, twoside, openright]{book}
+
+\usepackage{thesis/vuwthesis} % sets up some local things, mostly the front page
+
+\usepackage{palatino} % sets palatino as the default font
+\usepackage{url} % for typesetting urls
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{biblatex}
+\addbibresource{myrefs.bib}
+
+
+\usepackage{unicode-math}
+
+\usepackage{amsthm}
+
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont{Latin Modern Mono}
+\setmathfont{Latin Modern Math}
+
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+\let\mathbb\relax % remove the definition by unicode-math
+\DeclareMathAlphabet{\mathbb}{U}{msb}{m}{n}
+
+
+\usepackage[dvipsnames]{xcolor}
+\newcommand\myshade{85}
+\usepackage{todonotes}
+\setuptodonotes{inline}
+
+\colorlet{mylinkcolor}{Black}
+\colorlet{mycitecolor}{YellowOrange}
+\colorlet{myurlcolor}{NavyBlue}
+
+\usepackage[colorlinks]{hyperref}
+\hypersetup{
+    pdftitle={Maxwell Clarke MSc Proposal},
+    pdfsubject={Conditional Generative Transformers for Hand-Guided Animation Automation},
+    pdfauthor={Maxwell Clarke},
+    pdfkeywords={Artificial Intelligence, AI, Machine Learning, ML, Victoria University of Wellington, VUW, Animation, Virtual Reality, VR, Skeletal Animation, Character Animation, Bayesian Inference},
+    linkcolor  = mylinkcolor!\myshade!black,
+    citecolor  = mycitecolor!\myshade!black,
+    urlcolor   = myurlcolor!\myshade!black,
+    colorlinks = true,
+}
+
+\usepackage[nameinlink]{cleveref}
+
+%\renewcommand{\baselinestretch}{1.00}
+
+\include{thesis/x-x-definitions}
+
+\begin{document}
+
+\frontmatter
+% Book style knows about front matter
+% Report style doesn't so you need to set roman numbering etc yourself :-(
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Conditional Generative Transformers for Hand-Guided Animation Automation}
+\author{Maxwell Clarke}
+
+\subject{Computer Science}
+\abstract{
+In this thesis I develop neural networks and apply them to the problem of hand motion modelling for film production.
+
+Firstly, I develop a novel training regime for transformers which allows auto-regressive sampling of high-dimensional data in an arbitrary order, and demonstrate this technique on pixel-by-pixel sampling of MNIST images.
+
+Secondly, I develop a predictive model for hand-motion data, via unsupervised training on a motion-capture dataset. I compare fixed-order sampling to best order I found using the above technique.
+}
+% Books don't normally have abstracts, and this is a bit of a hack
+
+% Uncomment the appropriate degree
+%\phd
+% \mscthesisonly
+%\mscwithhonours
+\mscbothparts
+% \otherdegree{DEGREE OR DIPLOMA NAME}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+\maketitle
+
+\include{thesis/thesis-acknowledge}
+
+\tableofcontents
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% book style knows about mainmatter
+% if you are using report style you will have to rest page numbering etc.
+\mainmatter
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% individual chapters included here
+
+
+%!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+% Credit for the hand mesh
+% "Robotic Hand" (https://skfb.ly/6XLBS) by SeanNicolas is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+%!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+\include{thesis/1-0-introduction}
+\include{thesis/2-0-background}
+\include{thesis/3-0-transformers-and-sequence-modeling}
+\include{thesis/4-0-arbitrary-order-sampling-experiments}
+\include{thesis/5-0-angles-joints-hands}
+\include{thesis/6-0-hand-motion-experiments}
+\include{thesis/7-0-conclusion}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% and of course book style knows about backmatter
+% \backmatter caused problems with appendices :-(
+% and of course report style doesn't
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%\bibliographystyle{ieeetr}
+\printbibliography
+
+
+\end{document}

@@ -1,0 +1,92 @@
+\chapter{Understanding Transformers}
+\label{C:transformers}
+
+Many of the recent amazing results in deep learning have been achieved with transformer models. In this chapter I seek to understand these models at a deeper level, 
+
+\TODO{ Point forward to where the various transformer concepts are used. eg. \ref{s:order-tasks} }
+
+\subsection{Attention operator}
+
+An attention operation is of the following form, using short summation notation, where $\sigma$ is the \textit{softmax} operator, and $A$ is the pre-softmax attention logits.
+\begin{equation}
+\label{eqn:attn}
+\begin{split}
+    \nfdef{f_{\text{attn}}}{\R^{M×D}×\R^{N×D}×\R^{N×V}}{\R^{M×V}} \\
+    f_{\text{attn}}(\mathbf{Q}, \mathbf{K}, \mathbf{V})_{mv} ≝ \sum_n \left[\sigma\Big(\sum_d \mathbf{Q}_{md} \mathbf{K}_{nd}\Big) _{mn} \mathbf{V}_{nv} \right]
+\end{split}
+\end{equation}
+\begin{gather*}
+    M, N, D, V ∈ \N \\
+    \mathbf{Q} ∈ \R^{M×D}, \mathbf{K} ∈ \R^{N×D}, \mathbf{V} ∈ \R^{N×V}
+\end{gather*}
+
+Since the introduction of transformers it is common to use \textit{multi-head} attention, which allows for multiple \textit{heads} which each perform an attention operation in parallel with smaller key dimensionality $D_{\text{head}} = \frac{D}{ n_{\text{heads}}}$. 
+
+When we use Q and K derived from the same sequence of feature/embedding vectors, then $M = N$ and it is called \textit{self-attention}.
+
+When Q and K are derived from separate sequences of feature/embedding vectors, then $M ≠_n N$ and this is called \textit{cross-attention}.
+
+A comparison 
+
+\subsection{Attention is permutation-invariant}
+
+\TODO{ Explain and justify permutation-invariance of standard transformer layers }
+
+\section{Transformer architecture variants}
+
+The defining feature of a transformer model is that it has ``attention'' layers. However, there is not just one way to assemble these layers, and there is not just one way to train these models. Here I discuss a few of the notable variants and the motivation behind them.
+
+\subsection{Masked Sequence Modeling: Encoder-only models}
+\label{ss:msm}
+
+Arguably the simplest attention-based model architecture are encoder-only models. These are models trained on a sequence reconstruction task. Examples are the BERT \cite{bert} language model family, Wav2Vec \cite{wav2vec} for speech, and SimMIM \cite{simmim} image model.
+
+These models are typically used for sequence understanding tasks and classification tasks. The limitation of this kinds of models is it is trained in a regression (MAP) setting with respect to sequences of data, or 
+
+\TODO{ Figure of encoder-only model / masked sequence modeling. }
+
+
+
+\subsection{Causal Masking: Decoder-only models}
+\label{ss:decoder-only}
+
+\TODO{ Figure of decoder-only model / next-token prediction. }
+
+The simplest and most common transformer architecture is the decoder-only architecture, which I show below in  The distinguishing feature is that the only attention layers are self-attention layers, which are trained using a causal mask.
+
+Some examples of where we see this architecture in use are:
+\begin{itemize}
+    \item OpenAI's GPT-series \cite{gpt1, gpt2, gpt3} language models.
+    \item Latent Sequence Predictors in VQ-GAN \cite{vqgan} and Google's Parti \cite{parti}
+\end{itemize}
+
+
+% transformers first described in "attention is all you need" and have been pushing the state of the art in all domains
+
+% they are a model with a number of useful properties such as permutation invariance (set semantics) and 
+
+% there are multiple variations
+
+\subsection {Encoders vs. Decoders}
+\label{ss:enc-vs-dec}
+
+\subsection{Query-only transformers}
+\label{ss:pure-query}
+
+
+
+
+% Try this paper: "Fast Transformer Decoding: One Write-Head is All You Need"
+
+% https://arxiv.org/pdf/2112.05329.pdf
+% FaceFormer: Speech-Driven 3D Facial Animation with Transformers
+
+% - 1 -
+% Practical Parameterization of Rotations Using the Exponential Map
+
+%A Spatio-temporal Transformer for 3D Human Motion Prediction
+
+% https://github.com/guillefix/transflower-lightning
+% Transflower: Probabilistic autoregressive dance generation with multimodal attention
+
+% https://github.com/maxeonyx/msc-cgt-mnist/blob/5d8787e5f70a0e4c7ef5fcd810891303d700149a/cgt-mnist/entropy-ordering.ipynb

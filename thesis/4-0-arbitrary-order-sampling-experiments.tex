@@ -1,0 +1,109 @@
+\chapter{Sampling Sequences In Any Order}
+\label{C:a-o-sampling}
+
+When we predict sequences we usually predict them in time-order. For data with a temporal dimension, this is usually fine, because the real process that generated the data had a causal structure in the temporal dimension. However, when it comes to data with spatial dimensions, the best ordering may not be obvious.
+
+In this chapter I will investigate learning auto-regressive sequence transformers that are not restricted to sampling in a single order over the data. 
+
+In particular, I investigate the following question:
+
+\begin{itemize}
+    \item Is it better to sample in order of lowest-entropy-first or highest-entropy-first?
+\end{itemize}
+
+
+\section{Transformer Input}
+\label{s:transformer-inputs}
+
+Transformers have their input provided as (position, content) pairs, or more generally, as some kind of token embedding which is unique among the input set, such as special ``BEGIN'' or ``CLASS`` tokens.
+
+As we saw in \cref{C:transformers} both the attention layers and feed-forward layers are invariant to permutations of the input sequence. The model need not be retrained. Additionally, there is no requirement that the input set be contiguous in the sequence dimension - there can be (potentially large) gaps, with no change to to the structure of the model (however, the model must be trained for the particular problem still).
+
+As a result of being invariant to permutations, and working with non-contiguous sequences, we can present many different kinds of sequence prediction tasks to a transformer that we could not easily present to other models.
+
+\begin{itemize}
+    \item A Recurrent Neural Network (RNN) can be given sequences with gaps, but is not invariant to the order of the "previous token" conditioning data, which must be incorporated first in some particular order.
+    \item A convolutional or dense neural network applied to the input including the sequence dims (ie. not ``pointwise'') is neither invariant to the order, nor can be applied to sequences with gaps.
+\end{itemize}
+
+In the next section I describe some tasks we might want to perform with these unique abilities of a transformer.
+
+\section{Tasks}
+\label{s:order-tasks}
+
+In this section I discuss various tasks that utilize the ability of a transformer to predict sequences in any order.
+
+\subsection{Arbitrary order decoder-only transformer using input triples}
+\label{ss:decoder-only-triples}
+
+Let us examine first decoder-only transformers. these predict the next input from the previous input, conditioned on the rest of the sequence via their attention layers. 
+
+An input examples in the training data for these models is typically a set as follows:
+$$
+   \{ ..., (i_{n-1}, x_{n-1}, i_{n}), (i_{n}, x_{n}, i_{n+1}), (i_{n+1}, x_{n+1}, i_{n+2}), ... \}
+$$
+
+Where $i$ represents the position of a token, and $x$ represents the value of a token.
+
+However, if we instead construct an input sequence in the following way, we can train the model such that given any conditioning sequence (previous tokens), we can ask the model to predict a specific next token.
+
+We do this by providing the input as (input position, input value, target position] triples instead of [input position, input value] pairs (in which the target is implicit)
+
+\TODO{ Make and include a figure for this. Should show difference between input as triples [input position, input value, target position] and pairs [input position, input value] }
+
+\TODO{ I haven't found any works that do this - but I still think there probably are some out there }
+
+An example input in the training data is a set as follows:
+$$
+   \{ ..., (i_{n-1}, x_{n-1}, i_{n}), (i_{n}, x_{n}, i_{n+1}), (i_{n+1}, x_{n+1}, i_{n+2}), ... \}
+$$
+
+\TODO{ Improve the above formatting }
+
+If our sequence is presented in contiguous-forward-only ordering, $i_n$ is always paired with $i_{n+1}$ and we do not introduce any new information. However, we can create a sequence with an arbitrary order during training, so the model learns to utilize this information.
+
+Then, at inference time we can choose any position $i_{n+1}$ the model should predict next, by constructing the following triple $(i_n, x_n, i_{n+1})$ and appending it to the rest of the previous tokens.
+
+\subsection{Queries}
+\label{ss:cross-attn-queries}
+
+\TODO{ Write the introduction to this architecture variant in \Cref{C:transformers} }
+
+If we now examine the case of pure-query-decoder transformers, which I introduced in \cref{s:pure-query}. These are encoder-decoder transformers and are trained with a different task:
+\begin{align*}
+    \text{input} &= (\{ ..., (i_{n-1}, x_{n-1}), (i_{n}, x_{n}) \}, i_{n+1}) \\
+    \text{output} &= (x_{n+1})
+\end{align*}
+\TODO{ Improve the above formatting }
+
+The previous tokens are provided as a set of pairs to the encoder. Importantly, the decoder is run independently for every input/output pair.
+
+
+\section{Hypothesis}
+\label{s:a-o-hypotheses}
+
+Using the above two methods ``triples'' and ``pure-query-decoder'' models, I investigate a hypothesis about selecting a better sampling order on a toy dataset.
+
+The hypothesis is as follows.
+
+Assume that using the above methods, we can choose a dynamic ordering in which to sample a sequence at inference time. In particular, one of the ways we can do this is by evaluating the \textit{entropy} of all candidate positions, then sampling from the one with either the lowest or the highest entropy.
+
+I hypothesize that when auto-regressively sampling pixels to produce MNIST images, using a ``lowest-entropy-first'' ordering, will produce visually better results than a ``highest-entropy-first'' ordering.
+
+\section{Method}
+\TODO{Method: Details of experiments.}
+
+\subsection{}
+
+\subsection{Baseline: Fixed-order sequence prediction}
+\TODO{Subsection on training forward-only task}
+
+
+\TODO{Subsection on Training with arbitrary-order methods, but in forward-only mode (sanity check - should have similar, perhaps somewhat worse results)}
+\TODO{Subsection on Ablation / Hyper parameter tuning}
+\TODO{Subsection on Training (input position, input, target position)}
+\TODO{Subsection on Training query-decoder}
+
+\section{Results}
+\TODO{Section MNIST Results / Comparison}
+

@@ -1,0 +1,81 @@
+\chapter{Background}
+\label{C:background}
+
+
+\section{Neural Networks and Deep Learning}
+
+Since Krizhevsky et al.'s AlexNet in 2012, many problems are increasingly being solved by the paradigm of Artificial Neural Networks.
+
+Any particular ANN is not designed but discovered by gradient descent, where the parameters of the ANN are iteratively improved with respect to a loss function, which is typically defined with respect to some dataset.
+
+Although many additional variants exist, neural networks can largely be summarized as the application of linear operators and pointwise non-linear operators on tensors of floating point numbers.
+
+\subsection{Notation}
+\label{ss:dl-notation}
+
+\TODO{ Differentiate between multi-dimensional data (represented by vectors) are multi-dimensional representations of the data (represented by N-D Tensors. Define batch, sequence, and feature dimensions }
+
+Throughout this thesis I will describe aspects various neural networks with mathematical notation. In order to clarify the notation, I provide an overview here. Firstly, common functions that we see used in neural networks. I use the symbol $\phi$ for activation functions.
+
+Activation functions such as $\relu$ and $\gelu$ are scalar functions, but are typically applied across the feature / embedding dimension. To represent such, I will use the following notation, which is called Einstein summation notation:
+\begin{align*}
+\label{notation:relu, notation:gelu}
+    \text{ReLU} & & \fdef{\relu}{\R}{\R} \\
+    & & \relu&(x)_i ≝ \max(0,x_i) \\
+    \\
+    \text{GeLU} & & \fdef{\gelu}{\R}{\R} \\
+    & & \gelu&(x)_i ≝ x_i \cdot P( \X <= x_i ) = x_i \cdot \frac{1}{2}\left(1 + \erf(x_i/\sqrt{2})\right) \\
+    &\text{where} & \erf&(z) = \frac{2}{\sqrt{\pi}}\int^z_0{e^{-t^2}dt}
+\end{align*}
+In the above equation, the subscript $i$ shows that these functions apply the operation \textit{independently} across the vector $\x$. Below we see how this works for \textit{softmax} which is a vector valued function:
+\begin{equation}
+\label{notation:softmax}
+\begin{split}
+    \nvfdef{\sigma}{A×B}{A×B} \\
+    \sigma(\X)_{ab} ≝ \frac{e^{\X_{ab}}}{\sum_{b'} e^{\X_{ab'}}}
+\end{split}
+\end{equation}
+
+Secondly, notation for neural networks. Let $\x \in \R^{N}$ be some input data embedded into an $N$-dimensional vector space. Let $W \in \R^{N \times M} $ be a matrix of learned weights, and let $\phi \colon \R \to \R$ be some non-linear function. Then,
+\begin{equation}
+\label{notation:mlp}
+    f \colon \R^N \to \R^M \\
+    f(\x)_{\text{mlp}} ≝ \phi(W\x) + \boldsymbol{b} \\
+    W \in \R^{N \times H}, \quad \vb \in \R^H
+\end{equation}
+represents the computation done by one layer of a simple fully-connected neural network.
+
+A simple classifier network would be defined as follows, for $N$ dimensional data classified into $C$ classes, with $L$ hidden layers:
+\begin{align*}
+    \vfdef{f_0}{N}{H} &
+    f_{0}(\x) &= \phi(W_0 \x) + \vb &
+    W_0 &\in \R^{N\times H} &
+    \vb_0 &\in \R^{H}
+\\%
+    \vfdef{f_l}{H}{H},\ l \in 1,\dots,L \quad &
+    f_l(\x) &= \phi(W_l f_{l-1}(\x)) + \vb_l &
+    W_l &\in \R^{H\times H} \quad &
+    \vb_l &\in \R^{H}
+\\%
+    \vfdef{f_L}{H}{C} &
+    f_{L}(\x) &= \sigma(W_L f_{L-1}(\x)) &
+    W_L &\in \R^{H \times C}
+\\%
+    \vfdef{f}{N}{C} &
+    f &= f_L \circ f_{L-1} \circ \cdots \circ f_0 &
+    \theta &= \rlap{\{$W_0, \cdots, W_L, \vb_0, \cdots, \vb_{L-1} \} $}
+\end{align*}
+
+
+\subsection{Tasks}
+
+
+
+
+\section{Animation}
+
+
+
+
+
+
