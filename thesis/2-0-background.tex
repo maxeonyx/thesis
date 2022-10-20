@@ -69,13 +69,59 @@ A simple classifier network would be defined as follows, for $N$ dimensional dat
 
 \subsection{Tasks}
 
+When designing a neural network we can make different choices about the architecture, loss function etc. so that we can use the resulting model on specific tasks:
+\begin{itemize}
+    \item Training objective:
+    \begin{itemize}
+        \item Regression (\textit{implicit} MLE)
+        \item Parameter regression (\textit{explicit} MLE)
+        \item Classification (MLE specifically on categorical distributions)
+    \end{itemize}
+    \item Architecture
+    \begin{itemize}
+        \item Fixed input size models (CNNs, ResNets, MLPs)
+        \item Sequence models (RNNs, Transformers)
+    \end{itemize}
+    \item Training data design
+\end{itemize}
+\TODO{ Use the correct terminology for " Regression (\textit{implicit} MLE)" and "Parameter regression (\textit{explicit} MLE)"}
+
+\subsubsection{Training objectives}
+
+The choice of training objective affects the settings in which a model can be used, which theoretical properties we get from it, and more.
+
+The simplest kind of training objective is regression. When we train a model with a regression objective it learns to predict the expected value of the output. Regression is characterized by using an error function as the loss, for example \textit{mean-squared-error}:
+\newcommand{\mse}{L_{\text{MSE}}}
+\begin{align}
+\label{notation:mse}
+\begin{split}
+    \fdef{\mse}{\R^{N×D}×\R^{N×D}}{\R} \\
+    \mse&(y, \hat{y})_{ni} ≝ \frac{1}{N} \sum_n\left[ \sum_i (y_{ni} - \hat{y}_{ni})^2 \right]
+\end{split}
+\end{align}
+This function sums the error over the \textit{feature} dimension $D$ and averages the error over the \textit{batch} dimension $N$. Training a model by minimising this loss function, is equivalent to maximising the likelihood of a Gaussian distribution. Given input $x$, the model output $y = f(x)$ can be interpreted as $E[p(y|x)]$.
+
+A variant of this is the \textit{angular} mean-squared-error, which I will use later on in \Cref{C:hand-model}.
+\newcommand{\amse}{L_{\theta\text{-MSE}}}
+\begin{align}
+\label{notation:amse}
+\begin{split}
+    \fdef{\amse}{\R^{N×D}×\R^{N×D}}{\R} \\
+    \amse&(y, \hat{y})_{ni} ≝ \frac{1}{N} \sum_n\left[ \sum_i (\sin y_{ni} - \sin \hat{y}_{ni})^2 + (\cos y_{ni} - \cos \hat{y}_{ni})^2 \right]
+\end{split}
+\end{align}
+Here $y$ and $\hat{y}$ are angles, and the is defined in terms of arc length between their corresponding components. 
 
 
+\subsection{Auto-regressive models}
+
+\TODO{ Formulation of auto-regressive models and sampling }
+
+\TODO{ Things we can do with an auto-regressive model }
 
 \section{Animation}
 
 
+\section{Angle representations}
 
-
-
-
+\TODO{ Quaternions and unitary / complex matrices }
