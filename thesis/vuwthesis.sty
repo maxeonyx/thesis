@@ -1,11 +1,11 @@
-% THESIS STYLE FOR MSC, PHD THESES. 
+% THESIS STYLE FOR MSC, PHD THESES.
 % Works with book style. May work with other styles.
 % INSTRUCTIONS
 %
-% use \title{} to specify title, 
+% use \title{} to specify title,
 %     \author{} to specify author,
 %     \subject{} to specify subject,
-%     \abstract{} to specify abstract. 
+%     \abstract{} to specify abstract.
 %
 % use \phd
 %     \mscwithhonours
@@ -16,7 +16,7 @@
 %
 % use \maketitle AFTER everything has been specified.
 
-\renewcommand{\baselinestretch}{1.24} 
+\renewcommand{\baselinestretch}{1.24}
 % 1.5 spacing for 12pt see p53 of Goossens etc
 
 % setting the margins...
@@ -25,7 +25,7 @@
 \if@twoside
        \setlength{\oddsidemargin}{1.46cm}
        \setlength{\evensidemargin}{0.83cm}
-\else 
+\else
        \setlength{\oddsidemargin}{1.46cm}
 \fi
 
@@ -54,21 +54,22 @@
  \null
 
  \begin{center}
-  \parbox{100mm}{\center\LARGE\bf\@title}\par
+  \parbox{120mm}{\center\LARGE\bf\@title}\par
   \vspace*{\stretch{1}}
-  \parbox{100mm}{\center by}\par
+  \parbox{120mm}{\center by}\par
   \vspace*{\stretch{1}}
-  \parbox{100mm}{\center\large\@author}\par
-  \vspace*{\stretch{1}}
-  \parbox{100mm}{\center
-                         A thesis\\ 
-                         submitted to the Victoria University of Wellington\\ 
-                         in \@ffil\ of the\\
-                         requirements for the degree of\\  
-                         \@degree \\ 
-                         in \@subject.}\par
- 
- \parbox{100mm}{\center Victoria University of Wellington\\ \number\year}
+  \parbox{120mm}{\center\large\@author}\par
+  \vspace*{\stretch{2}}
+  \parbox{120mm}{\center A thesis\\
+       submitted to the Victoria University of Wellington\\
+       in \@ffil\ of the requirements\\
+       for the degree of}\par
+ \vspace*{\stretch{0.5}}
+ \parbox{120mm}{\center\large\@degree\\in \@subject.}\par
+ \vspace*{\stretch{2}}
+ \parbox{120mm}{\center Victoria University of Wellington}\par
+ \vspace*{\stretch{1}}
+ \parbox{120mm}{\center November 2022}
 \end{center}
 
 \pagestyle{empty}
@@ -87,5 +88,3 @@
 \gdef\@abstract{}
 \let\maketitle\relax
 }
-
-

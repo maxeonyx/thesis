@@ -1,8 +1,16 @@
 \documentclass[12pt, a4paper, twoside, openright]{book}
 
+\usepackage{fontspec}
+\setmainfont{texgyrepagella}[
+  Extension = .otf,
+  UprightFont = *-regular,
+  BoldFont = *-bold,
+  ItalicFont = *-italic,
+  BoldItalicFont = *-bolditalic,
+]
+
 \usepackage{thesis/vuwthesis} % sets up some local things, mostly the front page
 
-\usepackage{palatino} % sets palatino as the default font
 \usepackage{url} % for typesetting urls
 \usepackage{amsfonts}
 \usepackage{amsmath}
@@ -13,8 +21,6 @@
 \usepackage{unicode-math}
 
 \usepackage{amsthm}
-
-\usepackage{fontspec}
 
 
 \DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}

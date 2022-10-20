@@ -17,17 +17,17 @@ Although many additional variants exist, neural networks can largely be summariz
 
 Throughout this thesis I will describe aspects various neural networks with mathematical notation. In order to clarify the notation, I provide an overview here. Firstly, common functions that we see used in neural networks. I use the symbol $\phi$ for activation functions.
 
-Activation functions such as $\relu$ and $\gelu$ are scalar functions, but are typically applied across the feature / embedding dimension. To represent such, I will use the following notation, which is called Einstein summation notation:
+Activation functions such as $\relu$ and $\gelu$ are scalar functions, but are typically applied independently across all components of a tensor. To represent such, I will use the following notation:
 \begin{align*}
 \label{notation:relu, notation:gelu}
     \text{ReLU} & & \fdef{\relu}{\R}{\R} \\
     & & \relu&(x)_i ≝ \max(0,x_i) \\
     \\
     \text{GeLU} & & \fdef{\gelu}{\R}{\R} \\
-    & & \gelu&(x)_i ≝ x_i \cdot P( \X <= x_i ) = x_i \cdot \frac{1}{2}\left(1 + \erf(x_i/\sqrt{2})\right) \\
+    & & \gelu&(\x)_i ≝ \x_i \cdot P( \X <= \x_i ) = \x_i \cdot \frac{1}{2}\left(1 + \erf(\x_i/\sqrt{2})\right) \\
     &\text{where} & \erf&(z) = \frac{2}{\sqrt{\pi}}\int^z_0{e^{-t^2}dt}
 \end{align*}
-In the above equation, the subscript $i$ shows that these functions apply the operation \textit{independently} across the vector $\x$. Below we see how this works for \textit{softmax} which is a vector valued function:
+In the above equation, the subscript $i$ shows that these functions apply the operation \textit{independently} to each component of the vector $\x$. Below we see how this works for \textit{softmax} which is a vector valued function:
 \begin{equation}
 \label{notation:softmax}
 \begin{split}
@@ -35,6 +35,7 @@ In the above equation, the subscript $i$ shows that these functions apply the op
     \sigma(\X)_{ab} ≝ \frac{e^{\X_{ab}}}{\sum_{b'} e^{\X_{ab'}}}
 \end{split}
 \end{equation}
+The \textit{softmax} function does not apply the operation independently to each component of the vector, but rather the resulting value for each component is dependent on the other components of the vector
 
 Secondly, notation for neural networks. Let $\x \in \R^{N}$ be some input data embedded into an $N$-dimensional vector space. Let $W \in \R^{N \times M} $ be a matrix of learned weights, and let $\phi \colon \R \to \R$ be some non-linear function. Then,
 \begin{equation}
@@ -47,22 +48,22 @@ represents the computation done by one layer of a simple fully-connected neural 
 
 A simple classifier network would be defined as follows, for $N$ dimensional data classified into $C$ classes, with $L$ hidden layers:
 \begin{align*}
-    \vfdef{f_0}{N}{H} &
-    f_{0}(\x) &= \phi(W_0 \x) + \vb &
+    \vfdef{f_0}{N}{H} \\
+    f_{0}&(\x) = \phi(W_0 \x) + \vb &
     W_0 &\in \R^{N\times H} &
     \vb_0 &\in \R^{H}
 \\%
-    \vfdef{f_l}{H}{H},\ l \in 1,\dots,L \quad &
-    f_l(\x) &= \phi(W_l f_{l-1}(\x)) + \vb_l &
+    \vfdef{f_l}{H}{H},\ l \in 1,\dots,L \quad \\
+    f_l&(\x) = \phi(W_l f_{l-1}(\x)) + \vb_l &
     W_l &\in \R^{H\times H} \quad &
     \vb_l &\in \R^{H}
 \\%
-    \vfdef{f_L}{H}{C} &
-    f_{L}(\x) &= \sigma(W_L f_{L-1}(\x)) &
+    \vfdef{f_L}{H}{C} \\
+    f_{L}&(\x) = \sigma(W_L f_{L-1}(\x)) &
     W_L &\in \R^{H \times C}
 \\%
-    \vfdef{f}{N}{C} &
-    f &= f_L \circ f_{L-1} \circ \cdots \circ f_0 &
+    \vfdef{f}{N}{C} \\
+    f& = f_L \circ f_{L-1} \circ \cdots \circ f_0 &
     \theta &= \rlap{\{$W_0, \cdots, W_L, \vb_0, \cdots, \vb_{L-1} \} $}
 \end{align*}
 
@@ -74,8 +75,8 @@ When designing a neural network we can make different choices about the architec
     \item Training objective:
     \begin{itemize}
         \item Regression (\textit{implicit} MLE)
-        \item Parameter regression (\textit{explicit} MLE)
-        \item Classification (MLE specifically on categorical distributions)
+        \item Parameter estimation (\textit{explicit} MLE)
+        \item Classification (Parameter estimation on categorical distributions)
     \end{itemize}
     \item Architecture
     \begin{itemize}
@@ -85,8 +86,6 @@ When designing a neural network we can make different choices about the architec
     \item Training data design
 \end{itemize}
 \TODO{ Use the correct terminology for " Regression (\textit{implicit} MLE)" and "Parameter regression (\textit{explicit} MLE)"}
-
-\subsubsection{Training objectives}
 
 The choice of training objective affects the settings in which a model can be used, which theoretical properties we get from it, and more.
 
@@ -99,7 +98,7 @@ The simplest kind of training objective is regression. When we train a model wit
     \mse&(y, \hat{y})_{ni} ≝ \frac{1}{N} \sum_n\left[ \sum_i (y_{ni} - \hat{y}_{ni})^2 \right]
 \end{split}
 \end{align}
-This function sums the error over the \textit{feature} dimension $D$ and averages the error over the \textit{batch} dimension $N$. Training a model by minimising this loss function, is equivalent to maximising the likelihood of a Gaussian distribution. Given input $x$, the model output $y = f(x)$ can be interpreted as $E[p(y|x)]$.
+This function sums the error over the \textit{feature} dimension $D$ and averages the error over the \textit{batch} dimension $N$ \footnote{Averaging has no effect on the optimization, it is simply that dividing by the batch and/or sequence length means that the loss value remains in the same range independent of the batch size or sequence length.}. Training a model by minimising this loss function, is equivalent to maximising the likelihood of a Gaussian distribution. Given input $x$, the model output $y = f(x)$ can be interpreted as $\E[p(y|x)]$.
 
 A variant of this is the \textit{angular} mean-squared-error, which I will use later on in \Cref{C:hand-model}.
 \newcommand{\amse}{L_{\theta\text{-MSE}}}
@@ -110,10 +109,10 @@ A variant of this is the \textit{angular} mean-squared-error, which I will use l
     \amse&(y, \hat{y})_{ni} ≝ \frac{1}{N} \sum_n\left[ \sum_i (\sin y_{ni} - \sin \hat{y}_{ni})^2 + (\cos y_{ni} - \cos \hat{y}_{ni})^2 \right]
 \end{split}
 \end{align}
-Here $y$ and $\hat{y}$ are angles, and the is defined in terms of arc length between their corresponding components. 
+Here $y$ and $\hat{y}$ are vectors of angles, and the error is defined in terms of the squared arc length between their corresponding components. This loss function is equivalent to maximising the likelihood of a von Mises distribution, the derivation for which can be found in \Cref{C:angles-joints-hands}. This is useful when we want to model angles, for example when we want to predict the orientation of a hand, which we will do in \Cref{C:hand-model}.
 
 
-\subsection{Auto-regressive models}
+\section{Auto-regressive models}
 
 \TODO{ Formulation of auto-regressive models and sampling }
 
