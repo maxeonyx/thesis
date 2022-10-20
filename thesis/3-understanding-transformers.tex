@@ -1,7 +1,7 @@
 \chapter{Understanding Transformers}
 \label{C:transformers}
 
-Many of the recent amazing results in deep learning have been achieved with transformer models. In this chapter I seek to understand these models at a deeper level, 
+Many of the recent amazing results in deep learning have been achieved with transformer models. In this chapter I seek to understand these models at a deeper level,
 
 \TODO{ Point forward to where the various transformer concepts are used. eg. \ref{s:order-tasks} }
 
@@ -20,13 +20,13 @@ An attention operation is of the following form, using short summation notation,
     \mathbf{Q} ∈ \R^{M×D}, \mathbf{K} ∈ \R^{N×D}, \mathbf{V} ∈ \R^{N×V}
 \end{gather*}
 
-Since the introduction of transformers it is common to use \textit{multi-head} attention, which allows for multiple \textit{heads} which each perform an attention operation in parallel with smaller key dimensionality $D_{\text{head}} = \frac{D}{ n_{\text{heads}}}$. 
+Since the introduction of transformers it is common to use \textit{multi-head} attention, which allows for multiple \textit{heads} which each perform an attention operation in parallel with smaller key dimensionality $D_{\text{head}} = \frac{D}{ n_{\text{heads}}}$.
 
 When we use Q and K derived from the same sequence of feature/embedding vectors, then $M = N$ and it is called \textit{self-attention}.
 
 When Q and K are derived from separate sequences of feature/embedding vectors, then $M ≠_n N$ and this is called \textit{cross-attention}.
 
-A comparison 
+A comparison
 
 \subsection{Attention is permutation-invariant}
 
@@ -39,9 +39,9 @@ The defining feature of a transformer model is that it has ``attention'' layers.
 \subsection{Masked Sequence Modeling: Encoder-only models}
 \label{ss:msm}
 
-Arguably the simplest attention-based model architecture are encoder-only models. These are models trained on a sequence reconstruction task. Examples are the BERT \cite{bert} language model family, Wav2Vec \cite{wav2vec} for speech, and SimMIM \cite{simmim} image model.
+Arguably the simplest attention-based model architecture are encoder-only models. These are models trained on a sequence reconstruction task. Examples are the BERT \cite{bert} language model family, Wav2Vec \cite{wav2vec} for speech, and SimMIM \cite{SimMIM} image model.
 
-These models are typically used for sequence understanding tasks and classification tasks. The limitation of this kinds of models is it is trained in a regression (MAP) setting with respect to sequences of data, or 
+These models are typically used for sequence understanding tasks and classification tasks. The limitation of this kinds of models is it is trained in a regression (MAP) setting with respect to sequences of data, or
 
 \TODO{ Figure of encoder-only model / masked sequence modeling. }
 
@@ -63,7 +63,7 @@ Some examples of where we see this architecture in use are:
 
 % transformers first described in "attention is all you need" and have been pushing the state of the art in all domains
 
-% they are a model with a number of useful properties such as permutation invariance (set semantics) and 
+% they are a model with a number of useful properties such as permutation invariance (set semantics) and
 
 % there are multiple variations
 

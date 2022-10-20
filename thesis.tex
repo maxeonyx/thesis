@@ -14,10 +14,8 @@
 
 \usepackage{amsthm}
 
-\setmainfont{Latin Modern Roman}
-\setsansfont{Latin Modern Sans}
-\setmonofont{Latin Modern Mono}
-\setmathfont{Latin Modern Math}
+\usepackage{fontspec}
+
 
 \DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
 \let\mathbb\relax % remove the definition by unicode-math
@@ -111,13 +109,13 @@ Secondly, I develop a predictive model for hand-motion data, via unsupervised tr
 %!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-\include{thesis/1-0-introduction}
-\include{thesis/2-0-background}
-\include{thesis/3-0-transformers-and-sequence-modeling}
-\include{thesis/4-0-arbitrary-order-sampling-experiments}
-\include{thesis/5-0-angles-joints-hands}
-\include{thesis/6-0-hand-motion-experiments}
-\include{thesis/7-0-conclusion}
+\include{thesis/1-introduction}
+\include{thesis/2-background}
+\include{thesis/3-understanding-transformers.tex}
+\include{thesis/4-arbitrary-order-sampling-experiments.tex}
+\include{thesis/5-angles-joints-hands.tex}
+\include{thesis/6-hand-motion-experiments}
+\include{thesis/7-conclusion}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
