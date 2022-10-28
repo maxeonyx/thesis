@@ -100,17 +100,6 @@ The simplest kind of training objective is regression. When we train a model wit
 \end{align}
 This function sums the error over the \textit{feature} dimension $D$ and averages the error over the \textit{batch} dimension $N$ \footnote{Averaging has no effect on the optimization, it is simply that dividing by the batch and/or sequence length means that the loss value remains in the same range independent of the batch size or sequence length.}. Training a model by minimising this loss function, is equivalent to maximising the likelihood of a Gaussian distribution. Given input $x$, the model output $y = f(x)$ can be interpreted as $\E[p(y|x)]$.
 
-A variant of this is the \textit{angular} mean-squared-error, which I will use later on in \Cref{C:hand-model}.
-\newcommand{\amse}{L_{\theta\text{-MSE}}}
-\begin{align}
-\label{notation:amse}
-\begin{split}
-    \fdef{\amse}{\R^{N×D}×\R^{N×D}}{\R} \\
-    \amse&(y, \hat{y})_{ni} ≝ \frac{1}{N} \sum_n\left[ \sum_i (\sin y_{ni} - \sin \hat{y}_{ni})^2 + (\cos y_{ni} - \cos \hat{y}_{ni})^2 \right]
-\end{split}
-\end{align}
-Here $y$ and $\hat{y}$ are vectors of angles, and the error is defined in terms of the squared arc length between their corresponding components. This loss function is equivalent to maximising the likelihood of a von Mises distribution, the derivation for which can be found in \Cref{C:angles-joints-hands}. This is useful when we want to model angles, for example when we want to predict the orientation of a hand, which we will do in \Cref{C:hand-model}.
-
 
 \section{Auto-regressive models}
 

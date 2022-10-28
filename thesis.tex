@@ -8,6 +8,7 @@
   ItalicFont = *-italic,
   BoldItalicFont = *-bolditalic,
 ]
+\newfontfamily{\Symbola}{[Symbola.ttf]}
 
 \usepackage{thesis/vuwthesis} % sets up some local things, mostly the front page
 
@@ -17,10 +18,10 @@
 \usepackage{biblatex}
 \addbibresource{myrefs.bib}
 
-
 \usepackage{unicode-math}
 
 \usepackage{amsthm}
+
 
 
 \DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
@@ -42,7 +43,7 @@
     pdftitle={Maxwell Clarke MSc Proposal},
     pdfsubject={Conditional Generative Transformers for Hand-Guided Animation Automation},
     pdfauthor={Maxwell Clarke},
-    pdfkeywords={Artificial Intelligence, AI, Machine Learning, ML, Victoria University of Wellington, VUW, Animation, Virtual Reality, VR, Skeletal Animation, Character Animation, Bayesian Inference},
+    pdfkeywords={Artificial Intelligence, AI, Machine Learning, ML, Neural Networks, Deep Learning, Transformers, Transformer models, Gaussian Processes, Bayesian Inference, Animation, Virtual Reality, VR, Skeletal Animation, Character Animation, Victoria University of Wellington, VUW},
     linkcolor  = mylinkcolor!\myshade!black,
     citecolor  = mycitecolor!\myshade!black,
     urlcolor   = myurlcolor!\myshade!black,
@@ -117,10 +118,10 @@ Secondly, I develop a predictive model for hand-motion data, via unsupervised tr
 
 \include{thesis/1-introduction}
 \include{thesis/2-background}
-\include{thesis/3-understanding-transformers.tex}
-\include{thesis/4-arbitrary-order-sampling-experiments.tex}
-\include{thesis/5-angles-joints-hands.tex}
-\include{thesis/6-hand-motion-experiments}
+\include{thesis/3-understanding-transformers}
+\include{thesis/4-arbitrary-order-sampling-experiments}
+\include{thesis/5-angles-joints-hands}
+\include{thesis/6-hand-model}
 \include{thesis/7-conclusion}
 
 
