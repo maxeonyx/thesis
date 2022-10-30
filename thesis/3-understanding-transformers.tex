@@ -1,38 +1,95 @@
 \chapter{Understanding Transformers}
 \label{C:transformers}
 
-Many of the recent amazing results in deep learning have been achieved with transformer models. In this chapter I seek to understand these models at a deeper level,
+Many of the recent amazing results in deep learning have been achieved with a class of neural networks called \textit{transformers}, which were introduced and named in \cite{attention-is-all-you-need}. In this chapter I seek to understand this class of models at a broader level. I will discuss:
 
-\TODO{ Point forward to where the various transformer concepts are used. eg. \ref{s:order-tasks} }
+\begin{itemize}
+    \item The unique properties of the transformer architecture, which include working with sequences of any length without changing the weights, being able to be computed in parallel across the sequence during training, and being invariant to the order of the inputs.
+    \item The different variants of transformers, namely encoder-only, decoder-only, and encoder-decoder models.
+    \item The variety of different tasks that this architecture is suited for, which include an extremely generic gaussian-process-like category of tasks.
+\end{itemize}
 
-\subsection{Attention operator}
+Firstly, I will discuss the defining feature of a transformer which is including at least one \textit{attention} operation.
+
+\section{The attention operation}
+
+Attention is a biologically-inspired mechanism that allows a model to recieve inputs from distant parts of the input data, as weighted by the \textit{attention} given to those parts, which is computed from the data itself. This has proven extremely useful for diverse tasks including machine translation, image generation, and more. In this section I will describe the attention operator.
+
+Attention has a number of useful properties which come from its mathematical construction.
+
+\subsection{Mathematical Definition}
+
+\newcommand{\Q}{\mathbf{Q}}
+\newcommand{\K}{\mathbf{K}}
+\newcommand{\V}{\mathbf{V}}
 
 An attention operation is of the following form, using short summation notation, where $\sigma$ is the \textit{softmax} operator, and $A$ is the pre-softmax attention logits.
+\vspace{-10pt}
+\begin{gather*}
+    \nfdef{f_{\text{attn}}}{\R^{M×D}×\R^{N×D}×\R^{N×V}}{\R^{M×V}}
+\end{gather*}
+\vspace{-10pt}
 \begin{equation}
 \label{eqn:attn}
 \begin{split}
-    \nfdef{f_{\text{attn}}}{\R^{M×D}×\R^{N×D}×\R^{N×V}}{\R^{M×V}} \\
-    f_{\text{attn}}(\mathbf{Q}, \mathbf{K}, \mathbf{V})_{mv} ≝ \sum_n \left[\sigma\Big(\sum_d \mathbf{Q}_{md} \mathbf{K}_{nd}\Big) _{mn} \mathbf{V}_{nv} \right]
+    f_{\text{attn}}(\Q, \K, \V)_{mv} ≝ \sum_n \left[\sigma\Big(\sum_d \Q_{md} \K_{nd}\Big) _{mn} \V_{nv} \right]
 \end{split}
-\end{equation}
+\end{equation}%
 \begin{gather*}
-    M, N, D, V ∈ \N \\
-    \mathbf{Q} ∈ \R^{M×D}, \mathbf{K} ∈ \R^{N×D}, \mathbf{V} ∈ \R^{N×V}
-\end{gather*}
+    \Q ∈ \R^{M×D}, \K ∈ \R^{N×D}, \V ∈ \R^{N×V} \\
+    M, N, D, V ∈ \N
+\end{gather*}\vspace{-10pt}\\
+The innermost multiplication of $\Q$ and $\K$ is simply the inner product (dot product) between vectors $\Q_m$ and $\K_n$. This however is not inherent. Instead of the inner product, we can substitute any kernel function. (Although this is not usually done because the inner product is the most natural choice, and is efficient to compute)
 
-Since the introduction of transformers it is common to use \textit{multi-head} attention, which allows for multiple \textit{heads} which each perform an attention operation in parallel with smaller key dimensionality $D_{\text{head}} = \frac{D}{ n_{\text{heads}}}$.
+For clarity, the expanded form of this multiplication, resulting in the unnormalized attention weights $\mathbf{A}$, for an arbitrary kernel function $k$, is as follows:
+\begin{align*}
+\mathbf{A} = \Q \K^T &= \begin{bmatrix}
+    \Q_{1,1} & \Q_{1,2} & \cdots & \Q_D \\
+    \Q_{2,1} & \Q_{2,2} & \cdots & \Q_D \\
+    \vdots & \vdots & \ddots & \vdots \\
+    \Q_{M,1} & \Q_{M,2} & \cdots & \Q_D
+\end{bmatrix} \begin{bmatrix}
+    \K_{1,1} & \K_{1,2} & \cdots & \K_D \\
+    \K_{2,1} & \K_{2,2} & \cdots & \K_D \\
+    \vdots & \vdots & \ddots & \vdots \\
+    \K_{N,1} & \K_{N,2} & \cdots & \K_D
+\end{bmatrix}^T \\
+&= \begin{bmatrix}
+    k(\Q_{1}, \K_{1}) & k(\Q_{1}, \K_{2}) & \cdots & k(\Q_{1}, \K_{N}) \\
+    k(\Q_{2}, \K_{1}) & k(\Q_{2}, \K_{2}) & \cdots & k(\Q_{2}, \K_{N}) \\
+    \vdots & \vdots & \ddots & \vdots \\
+    k(\Q_{M}, \K_{1}) & k(\Q_{M}, \K_{2}) & \cdots & k(\Q_{M}, \K_{N})
+\end{bmatrix}
+\end{align*}
+where typically $k = \cdot$ (the dot-product operator).
 
-When we use Q and K derived from the same sequence of feature/embedding vectors, then $M = N$ and it is called \textit{self-attention}.
-
-When Q and K are derived from separate sequences of feature/embedding vectors, then $M ≠_n N$ and this is called \textit{cross-attention}.
-
-A comparison
 
 \subsection{Attention is permutation-equivariant}
 
 \TODO{ Make sure permutation-equivariance is the right terminology }
 
 \TODO{ Explain and justify permutation-invariance of standard transformer layers }
+
+
+\subsection{Attention variants}
+
+Attention is computed from the three matrices (or sequences of vectors) $\Q$, $\K$ and $\V$. In a neural network, these are each typically derived in some fashion from the inputs to the network. The most common way to do this is to use a learned linear transformation, which is simply a matrix multiplication followed by a bias term, for example
+
+\begin{align}
+\label{eqn:attn-linear}
+\Q &= W_{Q} X + b_{Q} \\
+\K &= W_{K} X + b_{K} \\
+\V &= W_{V} X + b_{V}
+\end{align}
+
+If we derive all three matrices from the same input $\X$, then $M = N$ and the attention operation is called a \textit{self-attention} operation. A diagram of this is shown in \Cref{fig:self-attn}. The blue shaded areas show the receptive field used when computing each output vector $x'_i$.
+
+When Q and K are derived from separate sequences of feature/embedding vectors, then in general $M ≠ N$ and this is called \textit{cross-attention}. A diagram of this is shown in \Cref{fig:cross-attention}.
+
+\input{thesis/attn-figures.tex}
+
+Since the introduction of transformers it is common to use \textit{multi-head} attention, which allows for multiple \textit{heads} which each perform an attention operation in parallel with smaller key dimensionality $D_{\text{head}} = \frac{D}{ n_{\text{heads}}}$.
+
 
 \section{Transformer architecture variants}
 
@@ -44,10 +101,6 @@ The defining feature of a transformer model is that it has ``attention'' layers.
 Arguably the simplest attention-based model architecture are encoder-only models. These are models trained on a sequence reconstruction task. Examples are the BERT \cite{bert} language model family, Wav2Vec \cite{wav2vec} for speech, and SimMIM \cite{SimMIM} image model.
 
 These models are typically used for sequence understanding tasks and classification tasks. The limitation of this kinds of models is it is trained in a regression (MAP) setting with respect to sequences of data, or
-
-\TODO{ Figure of encoder-only model / masked sequence modeling. }
-
-
 
 \subsection{Causal Masking: Decoder-only models}
 \label{ss:decoder-only}

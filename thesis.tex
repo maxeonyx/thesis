@@ -18,11 +18,13 @@
 \usepackage{biblatex}
 \addbibresource{myrefs.bib}
 
+\usepackage[labelfont=bf]{caption}
 \usepackage{unicode-math}
 
 \usepackage{amsthm}
 
-
+\usepackage[nodisplayskipstretch]{setspace}
+\setstretch{1.5}
 
 \DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
 \let\mathbb\relax % remove the definition by unicode-math
@@ -33,6 +35,9 @@
 \newcommand\myshade{85}
 \usepackage{todonotes}
 \setuptodonotes{inline}
+
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathreplacing,calligraphy}
 
 \colorlet{mylinkcolor}{Black}
 \colorlet{mycitecolor}{YellowOrange}
