@@ -8,12 +8,12 @@
         \begin{scope}[shift={(1.1cm * -3, 0)}]
 
             \foreach \x in {1,...,6} {
-                \node (i_\x) at (\x*1.1 cm, 0) {$\X_{\x}$};
+                \node (i_\x) at (\x*1.1 cm, 0) {$X_{\x}$};
             }
 
             \begin{scope}[shift={(0, -2cm)}]
                 \foreach \x in {1,...,6} {
-                    \node[transform shape,fill=white] (qkv_\x) at (\x*1.1 cm, 0) {$\Q_{\x}$ $\K_{\x}$ $\V_{\x}$};
+                    \node[transform shape,fill=white] (qkv_\x) at (\x*1.1 cm, 0) {$Q_{\x}$ $K_{\x}$ $V_{\x}$};
                     \draw[->] (i_\x.south) -- ([xshift=-4pt]qkv_\x.north);
                     \draw[->] (i_\x.south) -- (qkv_\x.north);
                     \draw[->] (i_\x.south) -- ([xshift=4pt]qkv_\x.north);
@@ -21,7 +21,7 @@
             \end{scope}
             \foreach \x in {1,...,6} {
                 \begin{scope}[shift={(0, -5cm)}]
-                    \node[transform shape,fill=white] (y_\x) at (\x*1.1 cm, 0) {$\X'_{\x}$};
+                    \node[transform shape,fill=white] (y_\x) at (\x*1.1 cm, 0) {$X'_{\x}$};
                 \end{scope}
                 \begin{scope}[
                 every path/.append style={draw=blue,fill=blue,fill opacity=0.1,draw opacity=0.2},
@@ -48,11 +48,11 @@
 
             \begin{scope}[shift={(1.1cm * -3, 0)}]
                 \foreach \x in {1,...,6} {
-                    \node (i_\x) at (\x*1.1 cm, 0) {$\X_{\x}$};
+                    \node (i_\x) at (\x*1.1 cm, 0) {$X_{\x}$};
                 }
                 \begin{scope}[shift={(0, -2cm)}]
                     \foreach \x in {1,...,6} {
-                        \node[transform shape,fill=white] (qkv_\x) at (\x*1.1 cm, 0) {$\Q_{\x}$ $\K_{\x}$ $\V_{\x}$};
+                        \node[transform shape,fill=white] (qkv_\x) at (\x*1.1 cm, 0) {$Q_{\x}$ $K_{\x}$ $V_{\x}$};
                         \draw[->] (i_\x.south) -- ([xshift=-4pt]qkv_\x.north);
                         \draw[->] (i_\x.south) -- (qkv_\x.north);
                         \draw[->] (i_\x.south) -- ([xshift=4pt]qkv_\x.north);
@@ -60,7 +60,7 @@
                 \end{scope}
                 \foreach \x in {1,...,6} {
                     \begin{scope}[shift={(0, -5cm)}]
-                        \node[transform shape,fill=white] (y_\x) at (\x*1.1 cm, 0) {$\X'_{\x}$};
+                        \node[transform shape,fill=white] (y_\x) at (\x*1.1 cm, 0) {$X'_{\x}$};
                     \end{scope}
                     \begin{scope}[
                     every path/.append style={draw=blue,fill=blue,fill opacity=0.1,draw opacity=0.2},
@@ -88,30 +88,30 @@
             \begin{scope}[shift={(1.1cm * -3, 0)}]
                 \begin{scope}[shift={(-3.4cm, 0)}]
                     \foreach \x in {1,...,7} {
-                        \node (x_\x) at (\x*1.1 cm, 0) {$\X_{\x}$};
+                        \node (x_\x) at (\x*1.1 cm, 0) {$X_{\x}$};
                     }
                 \end{scope}
                 \begin{scope}[shift={(-3.4cm, -2cm)}]
                     \foreach \x in {1,...,7} {
-                        \node[transform shape,fill=white] (kv_\x) at (\x*1.1 cm, 0) {$\K_{\x}$ $\V_{\x}$};
+                        \node[transform shape,fill=white] (kv_\x) at (\x*1.1 cm, 0) {$K_{\x}$ $V_{\x}$};
                         \draw[->] (x_\x.south) -- ([xshift=-2pt]kv_\x.north);
                         \draw[->] (x_\x.south) -- ([xshift=2pt]kv_\x.north);
                     }
                 \end{scope}
                 \begin{scope}[shift={(4.5cm, 0)}]
                     \foreach \y in {1,...,4} {
-                        \node (y_\y) at (\y*1.1 cm, 0) {$\mathbf{Y}_{\y}$};
+                        \node (y_\y) at (\y*1.1 cm, 0) {$Y_{\y}$};
                     }
                 \end{scope}
                 \begin{scope}[shift={(4.5cm, -2cm)}]
                     \foreach \y in {1,...,4} {
-                        \node[transform shape,fill=white] (q_\y) at (\y*1.1 cm, 0) {$\Q_{\y}$};
+                        \node[transform shape,fill=white] (q_\y) at (\y*1.1 cm, 0) {$Q_{\y}$};
                         \draw[->] (y_\y.south) -- (q_\y.north);
                     }
                 \end{scope}
                 \begin{scope}[shift={(4.5cm, -5cm)}]
                     \foreach \y in {1,...,4} {
-                        \node[transform shape,fill=white] (o_\y) at (\y*1.1 cm, 0) {$\mathbf{Y}'_{\y}$};
+                        \node[transform shape,fill=white] (o_\y) at (\y*1.1 cm, 0) {$Y'_{\y}$};
 
                         \begin{scope}[
                         every path/.append style={draw=blue,fill=blue,fill opacity=0.1,draw opacity=0.2},
