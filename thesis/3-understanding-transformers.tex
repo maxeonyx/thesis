@@ -28,7 +28,26 @@ When Q and K are derived from separate sequences of feature/embedding vectors, t
 
 A comparison
 
-\subsection{Attention is permutation-equivariant}
+\subsection{Attention operates on sets}
+
+When processing inputs, an interesting property to have that is useful for some tasks is the ability to operate on sets of inputs. For example, in the case of graphs, or sets of heterogeneous values, there may not be a natural ordering in which to process the inputs. In this case, the attention operator can be used to operate on the entire set of inputs at once. (However, when \textit{sampling} outputs, we typically still need to decide on some order. I will discuss this in more detail in \Cref{C:a-o-sampling}).
+
+Due to the construction of the attention operator, we can see that the output $O_i$ corresponding to a query vector $Q_i$ is independent of the order of the key and value vectors $K_i$ and $V_i$. This is because the computation only involves
+\begin{itemize}
+    \item pairwise-dot products between $Q_i$ and $K_j$
+    \item the softmax operation, which is \textit{equivariant} to the order of its inputs
+    \item addition of the corresponding $V_j$ vectors, which is \textit{commutative}
+\end{itemize}
+
+The computation of a query vector $Q$ is \textit{invariant} to permutations of the key and value vectors. This is because the softmax operator is \textit{invariant} to permutations of its inputs.
+
+The computations of the query vectors are also independent of each other, which makes the attention operator also \textit{equivariant} to permutations of the query vectors.
+
+This stands in contrast to the convolution operator, which is equivariant to the order of its inputs, but not invariant to permutations of its inputs.
+
+It also stands in contrast to recurrent neural networks, which are neither equivariant nor invariant to permutations of their inputs.
+
+This is a very important property of attention, and I claim it is as yet underappreciated.
 
 \TODO{ Make sure permutation-equivariance is the right terminology }
 
@@ -41,9 +60,9 @@ The defining feature of a transformer model is that it has ``attention'' layers.
 \subsection{Masked Sequence Modeling: Encoder-only models}
 \label{ss:msm}
 
-Arguably the simplest attention-based model architecture are encoder-only models. These are models trained on a sequence reconstruction task. Examples are the BERT \cite{bert} language model family, Wav2Vec \cite{wav2vec} for speech, and SimMIM \cite{SimMIM} image model.
+Arguably the simplest attention-based model architecture are encoder-only models. These are models trained on a sequence reconstruction task. Examples are the BERT \cite{bert} language model family, Wav2Vec \cite{wav2vec} for speech, and SimMIM \cite{sim-mim} image model.
 
-These models are typically used for sequence understanding tasks and classification tasks. The limitation of this kinds of models is it is trained in a regression (MAP) setting with respect to sequences of data, or
+These models are typically used for sequence understanding tasks and classification tasks. The limitation of these kinds of models is that they  trained in a regression (MAP) setting with respect to sequences of data, or
 
 \TODO{ Figure of encoder-only model / masked sequence modeling. }
 
@@ -54,13 +73,14 @@ These models are typically used for sequence understanding tasks and classificat
 
 \TODO{ Figure of decoder-only model / next-token prediction. }
 
-The simplest and most common transformer architecture is the decoder-only architecture, which I show below in  The distinguishing feature is that the only attention layers are self-attention layers, which are trained using a causal mask.
+Currently the most common transformer architecture is the decoder-only architecture, a diagram of which I show below in \TODO{Figure}. These models are used for sequence prediction/generation, and trained via self-supervised learning. The distinguishing feature of a decoder-only model is that its only attention layers are self-attention layers which have a causal mask applied during training.
 
 Some examples of where we see this architecture in use are:
 \begin{itemize}
     \item OpenAI's GPT-series \cite{gpt1, gpt2, gpt3} language models.
     \item Latent Sequence Predictors in VQ-GAN \cite{vqgan} and Google's Parti \cite{parti}
 \end{itemize}
+
 
 
 % transformers first described in "attention is all you need" and have been pushing the state of the art in all domains
@@ -72,8 +92,16 @@ Some examples of where we see this architecture in use are:
 \subsection {Encoders vs. Decoders}
 \label{ss:enc-vs-dec}
 
-\subsection{Query-only transformers}
+As we saw above the encoder differs from the decoder in that the decoder is trained with a causal mask, and the encoder is trained with some other variation such as random masking. When run in inference, they can both be used auto-regressively, but a decoder-only model is more effective at this task, because this is all it was trained to do. The training data for the decoder does not have any other examples in it such as ``fill-in-the-blank'' tasks.
+
+\subsection{Explicit Decoder Targeting}
 \label{ss:pure-query}
+
+While it is typical for a decoder to predict the tokens of a sequence in some particular order, we are not limited to this. We can also use the decoder to predict the tokens of a sequence in any order.
+
+This is the approach taken in, for example, ``Order Matters: Sequence to sequence for sets'' \cite{order-matters}.
+
+
 
 % Try this paper: "Fast Transformer Decoding: One Write-Head is All You Need"
 

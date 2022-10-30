@@ -1,15 +1,38 @@
 \chapter{Introduction}
 \label{C:intro}
 
-This thesis describes the research I have done, which is at the intersection of two areas: Deep Learning and Computer Graphics.
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+    \tikzstyle{every node}=[node distance=5cm]
+    \node (tn) {Transformer Networks};
+    \node (pm) [below of=tn] {Probabilistic Models};
+    \node (cg) [right of=tn] {Computer Graphics};
+    \node (an) [below of=cg] {Hand Animation};
 
-In this thesis:
+    \draw[->,bend left] (tn) to (pm);
+    \draw[->,bend left] (pm) to (tn);
+    \draw[->,bend left] (cg) to (an);
+    \draw[->,bend left] (pm) to (an);
+    \draw[->,bend left] (tn) to (an);
+\end{tikzpicture}
+\caption{Which learnings and experiments contributed to each other in this thesis.}
+\end{figure}
+
+In this thesis I discuss the learnings and experimentds from the past year, which are at the intersection of two areas: Deep Learning and Computer Graphics. There are three main areas of focus:
 \begin{enumerate}
-    \item I create a proof of concept machine learning application for a problem in computer graphics. I chose to focus on hand motion prediction.
-    \item I experiment with Transformer models and understand them in depth.
+    \item I experiment with \textit{transformer} models, and understand them in depth (\Cref{C:transformers}).
+    \item I experiment with using Transformer models for Bayesian inference, essentially as Gaussian Processes (\Cref{C:a-o-sampling}).
+    \item I create a proof of concept machine learning application for \textit{hand motion prediction}, useful for film and video game production (Chapters \ref{C:angles-joints-hands} and \ref{C:hand-model}).
 \end{enumerate}
 
-\TODO{ Summarize what parts are my novel contributions, what parts are my novel summarizations, and what parts are just other peoples' work }
+Although much of my work is summarizing others' research and presenting my learnings, I have two main novel contributions:
+\begin{enumerate}
+    \item I present experiments with \textit{dynamically-ordered} auto-regressive sampling, which utilises the \textit{permutation-invariance} of the attention operation in transformer models.
+    \item I present a proof-of-concept transformer-based generative model for hand motion prediction, which can be used to predict hand motion at arbitrary target frames, and to predict the joints of a hand in any order within that frame.
+\end{enumerate}
+
+In the rest of this chapter, I will discuss the motivation for this thesis, and previous work that relates to it.
 
 \section{Motivation}
 \label{s:motivation}
@@ -20,12 +43,16 @@ The problem domain I focused on -- hand motion prediction -- is a sequence predi
 
 Whenever a moving virtual character appears in an animated film or a video game, someone had to spend the time to specify the angles of all the joints across all the frames. Fortunately is not necessary to lay out every single frame, because animation tools used for both games and film production make use of interpolation techniques between key-frames, but artists must still specify many joints, over many key-frames, over many different kinds of animation.
 
-For realistic human characters this work can be thought of as divided into three parts, each involving a similar amount of work:
+In order to fully animate a character, an animator needs to appropriately animate all moving parts of that character. We can divide these into three groups, each involving a similar amount of work:
 \begin{itemize}
-    \item Facial animation -- animating the muscles of the face when a character is talking or otherwise making facial expressions.
-    \item Hand animation -- animating the fingers and wrists when a character making gestures or manipulating objects.
-    \item Body animation (also simply called character animation) -- animating the rest of the body, e.g. the legs, arms, neck and spine when a character is walking, dancing, etc.
+    \item Facial animation -- animating the muscles of the face when a character talks or otherwise makes facial expressions.
+    \item Hand animation -- animating the fingers and wrists when a character makes gestures or manipulates objects.
+    \item Body animation (also simply called character animation) -- animating the rest of the body, e.g. the legs, arms, neck and spine when a character walks, dances, etc.
 \end{itemize}
+
+Of these, the face and body are often the most noticeable, and most of the time recieve the most attention from the audience. However, the hands are also very important, and are often the most difficult to animate.
+
+\TODO{Examples of problematic hand animation.}
 
 \subsection{Why focus on transformers?}
 \label{ss:why-transformers}
