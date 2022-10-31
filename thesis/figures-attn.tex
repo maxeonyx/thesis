@@ -35,7 +35,7 @@
     \draw[thick,decorate,decoration={calligraphic brace,raise=5pt, amplitude=5pt}] (i_1.north) -- node[above=10pt] {Inputs} (i_6.north);
 
     \end{tikzpicture}
-    \caption{Full self-attention, as used in transformer encoders.}
+    \caption[Self-attention]{Full self-attention, as used in transformer encoders.}
     \label{fig:self-attn}
 \end{figure}
 
@@ -74,7 +74,7 @@
         \draw[thick,decorate,decoration={calligraphic brace,raise=5pt, amplitude=5pt}] (i_1.north) -- node[above=10pt] {Inputs} (i_6.north);
 
     \end{tikzpicture}
-    \caption{Self-attention with causal masking, as used in transformer decoders during training.}
+    \caption[Self-attention with causal masking]{Self-attention with causal masking, as used in transformer decoders during training.}
     \label{fig:self-attn-causal}
 \end{figure}
 
@@ -126,6 +126,59 @@
         \draw[thick,decorate,decoration={calligraphic brace,raise=5pt, amplitude=5pt}] (y_1.north) -- node[above=10pt] {Query Inputs} (y_4.north);
 
     \end{tikzpicture}
-    \caption{Cross-attention, as used during during transformer inference, and during training for some variants.}
+    \caption[Cross-attention]{Cross-attention, as used in encoder-decoder models.}
     \label{fig:cross-attn}
+\end{figure}
+
+
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}
+        \begin{scope}
+            \tikzstyle{every node}=[draw,rectangle,text width=0.7cm, minimum width=1.1cm, minimum height=0.8cm]
+
+            \begin{scope}[shift={(1.1cm * -3, 0)}]
+                \begin{scope}[shift={(-3.4cm, 0)}]
+                    \foreach \x in {1,...,7} {
+                        \node[anchor=south] (x_\x) at (\x*1.1 cm, 0) {$X_{\x}$};
+                    }
+                \end{scope}
+                \begin{scope}[shift={(-3.4cm, -2cm)}]
+                    \foreach \x in {1,...,7} {
+                        \node[transform shape,fill=white,anchor=south] (kv_\x) at (\x*1.1 cm, 0) {$K_{\x}$ $V_{\x}$};
+                        \draw[->] (x_\x.south) -- ([xshift=-2pt]kv_\x.north);
+                        \draw[->] (x_\x.south) -- ([xshift=2pt]kv_\x.north);
+                    }
+                \end{scope}
+                \begin{scope}[shift={(4.5cm, 0)}]
+                    \foreach \y / \i in {8/1,9/2,10/3,11/4} {
+                        \node[anchor=south] (y_\y) at (\i*1.1 cm, 0) {$X_{\y}$};
+                    }
+                \end{scope}
+                \begin{scope}[shift={(4.5cm, -2cm)}]
+                    \foreach \y / \i in {8/1,9/2,10/3,11/4} {
+                        \node[transform shape,fill=white,anchor=south] (q_\y) at (\i*1.1 cm, 0) {$Q_{\y}$ $K_{\y}$ $V_{\y}$};
+                        \draw[->] (y_\y.south) -- (q_\y.north);
+                    }
+                \end{scope}
+                \begin{scope}[shift={(4.5cm, -5cm)}]
+                    \foreach \y / \i in {8/1,9/2,10/3,11/4} {
+                        \node[transform shape,fill=white,anchor=south] (o_\y) at (\i*1.1 cm, 0) {$X'_{\y}$};
+
+                        \begin{scope}[
+                        every path/.append style={draw=blue,fill=blue,fill opacity=0.1,draw opacity=0.2},
+                        blend group=darken]
+                            \fill[blue] (o_\y.north) -- (kv_1.south) -- ([xshift=4pt]q_\y.south) -- cycle;
+                        \end{scope}
+                    }
+                \end{scope}
+            \end{scope}
+        \end{scope}
+        \draw[thick,decorate,decoration={calligraphic brace,raise=5pt, amplitude=5pt}] (x_1.north) -- node[above=10pt] {Context Inputs} (x_7.north);
+        \draw[thick,decorate,decoration={calligraphic brace,raise=5pt, amplitude=5pt}] (y_8.north) -- node[above=10pt] {Query Inputs} (y_11.north);
+
+    \end{tikzpicture}
+    \caption[Partial self-attention]{Partial self-attention, as used during incremental inference in models with a decoder.}
+    \label{fig:partial-self-attn}
 \end{figure}
