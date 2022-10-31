@@ -1,22 +1,26 @@
 \chapter{Sampling Sequences In Any Order}
 \label{C:a-o-sampling}
 
-When we predict sequences we usually predict them in time-order. For data with a temporal dimension, this is usually fine, because the real process that generated the data had a causal structure in the temporal dimension. However, when it comes to data with spatial dimensions, the best ordering may not be obvious.
+When we use an auto-regressive model to predict sequences, we usually choose some fixed order. For data with a temporal dimension, this is usually first-to-last, which is usually natural because the real process that generated the data had a causal structure in the temporal dimension.
 
-In this chapter I will investigate learning auto-regressive sequence transformers that are not restricted to sampling in a single order over the data. 
+However, a simple ordering may not always be the best. For example, when predicting data with spatial dimensions such as pixels in images, the best ordering may not be obvious. Also, some data may have very long sequences and latency requirements (such as character animation data), where it is expensive to generate the data in order, and we would instead like to generate only particular parts of the sequence.
 
-In particular, I investigate the following question:
+In this chapter I investigate learning auto-regressive transformers to generate pixels of the MNIST dataset. By changing the model architecture and training procedure, I show that we can learn to generate pixels in any order, including dynamically choosing the order of the pixels while sampling. In effect, we learn a model that can be used as a Gaussian process on this dataset.
 
+In particular, I compare the following sampling orders with my model:
 \begin{itemize}
-    \item Is it better to sample in order of lowest-entropy-first or highest-entropy-first?
+    \item Left-to-right, top-to-bottom
+    \item Random
+    \item Highest-entropy-first
+    \item Lowest-entropy-first
 \end{itemize}
 
-\section{Transformer Input}
+\section{Changing The Transformer Input}
 \label{s:transformer-inputs}
 
 Transformers have their input provided as (position, content) pairs, or more generally, as some kind of token embedding which is unique among the input set, such as special ``BEGIN'' or ``CLASS`` tokens.
 
-As we saw in \cref{C:transformers} both the attention layers and feed-forward layers are invariant to permutations of the input sequence. The model need not be retrained. Additionally, there is no requirement that the input set be contiguous in the sequence dimension - there can be (potentially large) gaps, with no change to to the structure of the model (however, the model must be trained for the particular problem still).
+As we saw in \cref{C:transformers} both the attention layers and feed-forward layers are invariant to permutations of the input sequence. Additionally, there is no requirement that the input set be contiguous in the sequence dimension - there can be (potentially large) gaps, with no change to to the structure of the model (however, the model must be trained for the particular problem still).
 
 As a result of being invariant to permutations, and working with non-contiguous sequences, we can present many different kinds of sequence prediction tasks to a transformer that we could not easily present to other models.
 
@@ -35,7 +39,7 @@ In this section I discuss various tasks that utilize the ability of a transforme
 \subsection{Arbitrary order decoder-only transformer using input triples}
 \label{ss:decoder-only-triples}
 
-Let us examine first decoder-only transformers. these predict the next input from the previous input, conditioned on the rest of the sequence via their attention layers. 
+Let us examine first decoder-only transformers. these predict the next input from the previous input, conditioned on the rest of the sequence via their attention layers.
 
 An input examples in the training data for these models is typically a set as follows:
 $$
@@ -105,4 +109,3 @@ I hypothesize that when auto-regressively sampling pixels to produce MNIST image
 
 \section{Results}
 \TODO{Section MNIST Results / Comparison}
-
