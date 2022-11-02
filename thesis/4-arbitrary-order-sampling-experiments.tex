@@ -1,6 +1,27 @@
 \chapter{Sampling Sequences In Any Order}
 \label{C:a-o-sampling}
 
+
+\section{Autoregressive models}
+
+When modeling data, it is often useful to have a \textit{probabilitic} model of the data, rather than a deterministic model. This allows us to quantify uncertainty about the model outputs, sample from the model, and avoid problems with multi-modal distributions.
+
+However, when the data we are modeling is high-dimensional, probabilistic models often become computationally expensive or intractable. For example, if we are modeling a sequence of $N$ observations, and each observation is a $D$-dimensional vector, then even a simple gaussian distribution over the  sequence has $DN + (DN)^2$ parameters ($DN$ means, plus a $DN \times DN$ covariance matrix). In addition, it is not natural to model sequences of arbitrary length with this approach.
+
+\subsection{Distributions over high-dimensional data}
+
+There are a few main approaches to address this problem, which I show below:
+
+\begin{itemize}
+    \item Discretization
+    \item Independence assumptions
+    \item Auto-regressive factorization
+\end{itemize}
+
+We can discretize the data, and model it as a sequence of discrete variables. For example, we can use a clustering algorithm to learn a series of $K$ points within our $(DN)^2$ high-dimensional space, and then form a discrete distribution over these points. A discrete distribution over $K$ points has $K-1$ free parameters, so this approach reduces the number of parameters from $(DN)^2$ to $K-1$, and makes sampling and inference more efficient. However the discretization changes the domain of the data, which may not always be useful.
+
+Independence assumptions are another way to reduce the number of parameters. For example, we can assume that the observations are independent, and model them as a product of $N$ independent distributions. For a Gaussian, this means fixing parts of the co-variance matrix, often having only a single variance parameter. A signle variance parameter reduces the number of parameters from $(DN)^2$ to $DN$, but it also makes the model less expressive. For sequence data, this assumption is almost never valid along the sequence dimension, so this approach is not very useful.
+
 When we use an auto-regressive model to predict sequences, we usually choose some fixed order. For data with a temporal dimension, this is usually first-to-last, which is usually natural because the real process that generated the data had a causal structure in the temporal dimension.
 
 However, a simple ordering may not always be the best. For example, when predicting data with spatial dimensions such as pixels in images, the best ordering may not be obvious. Also, some data may have very long sequences and latency requirements (such as character animation data), where it is expensive to generate the data in order, and we would instead like to generate only particular parts of the sequence.

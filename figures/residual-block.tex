@@ -1,0 +1,66 @@
+
+\usetikzlibrary{shapes,arrows,fit,calc,positioning,automata}
+
+\tikzset{XOR/.style={draw,circle,append after command={
+        [shorten >=\pgflinewidth, shorten <=\pgflinewidth,]
+        (\tikzlastnode.north) edge (\tikzlastnode.south)
+        (\tikzlastnode.east) edge (\tikzlastnode.west)
+        }
+    }
+}
+\tikzset{line/.style={draw, -latex',shorten <=1bp,shorten >=1bp}}
+
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}
+
+        % for loop over embedding dimension D=6
+        \foreach \d in {1,...,6} {
+            \node (ii_\d) at (\d*0.7cm, 0.4cm) {};
+            \node[draw,fill=black,circle,minimum width=0.2cm, minimum height=0.2cm,inner sep=0] (i_\d) at (\d*0.7cm, 0) {};
+            \node[draw,fill=white,XOR,text width=0.3cm,text height=0.3cm,align=center,inner sep=0] (o_\d) at (\d*0.7cm, -10cm) {};
+            \node (oo_\d) at (\d*0.7cm, -10.8cm) {};
+            \draw[->] (ii_\d) -- (i_\d.north);
+            \draw[->,dashed] (i_\d) -- (o_\d.north);
+            \draw[->] (o_\d.south) -- (oo_\d);
+        }
+        \draw[thick,decorate,decoration={calligraphic brace,raise=0.3cm, amplitude=5pt}] (i_1.north) -- node[above=15pt] {Embedding Dimension $D$} (i_6.north);
+
+        \begin{scope}[shift={(2cm, -2cm)}]
+            % MLP inputs
+            \foreach \d in {1,...,6} {
+                \node[draw,fill=white,minimum width=0.7cm, minimum height=0.7cm] (mlp_i_\d) at (\d*0.7cm, 0) {};
+            }
+            % MLP hidden dimension H=10
+            \foreach \h in {1,...,10} {
+                \node[draw,fill=white,minimum width=0.7cm, minimum height=0.7cm] (mlp_h1_\h) at (\h*0.7cm - 2*0.7cm, -1.5cm) {};
+                \node[draw,fill=white,minimum width=0.7cm, minimum height=0.7cm] (mlp_h2_\h) at (\h*0.7cm - 2*0.7cm, -3cm) {};
+                \draw[->] (mlp_h1_\h) -- node[draw,circle,fill=white,inner sep=1pt] {\tiny ϕ} (mlp_h2_\h);
+            }
+            % MLP outputs
+            \foreach \d in {1,...,6} {
+                \node[draw,fill=white,minimum width=0.7cm, minimum height=0.7cm] (mlp_o_\d) at (\d*0.7cm, -4.5cm) {};
+            }
+            % MLP connections
+            \foreach \d in {1,...,6} {
+                \draw[->] (i_\d) -- (mlp_i_\d.north);
+                \foreach \h in {1,...,10} {
+                    \draw[->] (mlp_i_\d.south) -- (mlp_h1_\h.north);
+                    \draw[->] (mlp_h2_\h.south) -- (mlp_o_\d.north);
+                }
+
+                \node[minimum width=0.7cm, minimum height=0.7cm] (attn_\d) at (\d*0.7cm, -6cm) {};
+                \draw[->] (mlp_o_\d.south) -- (attn_\d.north);
+                \draw[->] (attn_\d.south) -- (o_\d);
+            }
+
+            % attention block, just one wide rectangle
+
+            \node[draw,fill=white, minimum width=4.2cm, minimum height=0.7cm,anchor=west] (attention) at (0.35, -6cm) {Attention};
+
+        \end{scope}
+    \end{tikzpicture}
+    \caption[Typical residual block in transformer]{Typical residual block in transformer (with the $D$ dimension expanded, rather than the $N$ or $M$ dimension as usual.). In the MLP block, the sequence of residual latents are independently projected into a higher-dimensional space, where a non-linearity is applied, and then projected back down to the original dimension. The output of the MLP block is then projected into $Q$, $K$, and $V$ spaces, and the attention operation is applied. Finally, the results are added to the residual stream.}
+    \label{fig:residual-block}
+\end{figure}

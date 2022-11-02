@@ -1,12 +1,12 @@
 \chapter{Understanding Transformers}
 \label{C:transformers}
 
-Many of the recent amazing results in deep learning have been achieved with a class of neural networks called \textit{transformers}, which were introduced and named in "Attention Is All You Need", Vaswani et al. 2017 \cite{attention-is-all-you-need}. Since then a large number of variants have been developed, and in this chapter I seek to understand this class of models at a broader level. I will discuss:
+Many of the recent amazing results in deep learning have been achieved with a class of neural networks called \textit{transformers}, which were introduced and named in "Attention Is All You Need", Vaswani et al. 2017 \cite{attention-is-all-you-need}. The distinguishing feature of these models is using one or more \textit{attention} layers to enable information propagation between elements in sequence data. Since 2017, a large number of transformer variants have been developed, and in this chapter I seek to understand this class of models at a broader level. I will discuss:
 
 \begin{itemize}
-    \item The unique properties of the transformer architecture, which include working with sequences of any length without changing the weights, being able to be computed in parallel across the sequence during training, and being invariant to the order of the inputs.
+    \item The unique properties of the attention operation, which include working with sequences of any length without changing the weights, being able to be computed in parallel across the sequence during training, and being invariant to the order of the inputs.
     \item The different variants of transformers, namely encoder-only, decoder-only, and encoder-decoder models.
-    \item The variety of different tasks that this architecture is suited for, which include an extremely generic gaussian-process-like category of tasks.
+    \item The variety of different tasks that these model are trained on and used for, building up to the next chapter where I introduce an extremely generic gaussian-process-like task.
 \end{itemize}
 
 Firstly, I will discuss the defining feature of a transformer which is including at least one \textit{attention} operation.
@@ -61,7 +61,7 @@ For clarity, the expanded form of the attention computation, resulting in the un
 &= Q K^T .
 \end{align*}
 
-We can see that the attention weights have shape $M×N$. This is the primary drawback of the attention operation, since in self attention $M = N$, and so takes $O(M^2)$ space and time to compute. Despite this drawback, the attention operation has proven extremely useful in a variety of tasks. There are many different ways to address this but I will not discuss them.
+We can see that the attention weights $mathbf{A}$ have shape $M×N$. This is the primary drawback of the attention operation. $M$ and $N$ are typcially both large, and the takes $O(MN)$ space and time to compute. Despite this drawback, the attention operation has proven extremely useful in a variety of tasks. There are many different ways to address this but I will not discuss them.
 
 \subsection{Permutation-invariance in the context inputs}
 
@@ -86,8 +86,23 @@ This property of attention stands in contrast to the two main other methods used
 
 The second (and most useful) property of attention is that it can be used to process inputs of dynamic length. We can again see this in \Cref{eqn:attn-perm-invariance}. The softmax operation normalizes the attention weights, which causes the resulting summation of vectors $V_n$ to be a convex combination. The resulting output $O_m$ will therefore sit within the convex hull of the vectors $V_n$. This means that the output $O_m$ will be a ``valid'' output regardless of the length of the input sequence $K_v$.
 
+\subsection{Parallel computation}
 
-\subsection{Attention variants}
+The third property of attention is that it can be computed in parallel across the inputs sequence during training. At all steps of the attention computation except the softmax operation, there are no dependencies between neghbouring elements of the tensors. This stands in contrast to RNNs, where the outputs for one position in the sequence depend on the previous outputs.
+
+The fact that attention can be computed in parallel is a very useful property, since while the operation requires $O(MN)$ time and space, we can utilize bigger GPU hardware the real-time cost to $O(1)$ (assuming sufficient memory capacity, compute capability, and also GPU memory bandwidth, which is often the limiting factor \cite{multi-query-attn}.) The attention logits $A_{mn}$ can be computed entirely in parallel. The softmax operation depends on all previous attention logits across the key-value dimension $N$, which requires cross-talk between GPU units but does not prevent parallel computation. The final computation for the outputs $O_m$ can also be computed in parallel.
+
+So attention is a operation with a number of useful properties. Now we will see how it is used to build a variety of models capable of solving a variety of tasks with sequence data.
+
+\section{Transformer models}
+
+An attention operation model does not itself make a neural network. It is simply a building block that can be used to construct a neural network.
+
+A transformer model puts attention operations together with MLP blocks similarly to in residual networks (ResNets). Without MLP blocks as non-linearities, the outputs of an attention operation are linear functions of the inputs, since the softmax is only used to compute coefficients when summing the values. This means that the outputs of an attention operation are linear combinations of the inputs. This is useful as a building block but we would like to be able to learn non-linear functions of the inputs. MLP blocks are used to introduce non-linearities into the model.
+
+In \Cref{fig:residual-block} we can see a diagram of a typical residual block in a transformer, combining an attention operation, a feed-forward layer, and a residual connection as in a ResNet.
+
+\input{figures/residual-block.tex}
 
 Attention is computed from the three matrices (or sequences of vectors) $Q$, $K$ and $V$. In a neural network, these are each typically derived in some fashion from the inputs to the network. The most common way to do this is to use a learned linear transformation, which is simply a matrix multiplication followed by a bias term, for example
 \begin{align}
@@ -102,36 +117,27 @@ If we derive all three matrices from the same input $\X$, then $M = N$ and the a
 
 When Q and K are derived from separate sequences of feature/embedding vectors, then in general $M ≠ N$ and this is called \textit{cross-attention}. A diagram of this is shown in \Cref{fig:cross-attention}.
 
-\input{thesis/figures-attn.tex}
+\input{figures/attn.tex}
 
 Since the introduction of transformers it is common to use \textit{multi-head} attention, which allows for multiple \textit{heads} which each perform an attention operation in parallel with smaller key dimensionality $D_{\text{head}} = \frac{D}{ n_{\text{heads}}}$.
 
-
-
-
-
-
-
-
-
-
-\section{Transformer architecture variants}
-
 The defining feature of a transformer model is that it has ``attention'' layers. However, there is not just one way to assemble these layers, and there is not just one way to train these models.
 
-We can broadly split the transformer architecture variants into three categories: \textit{encoder-only}, \textit{decoder-only} and \textit{encoder-decoder} architectures.
+We can broadly split the transformer architecture variants into four categories: \textit{encoder-only} models, \textit{decoder-only} models, unified attention models, and \textit{encoder-decoder} models.
 
 \subsection{Masked Sequence Modeling: Encoder-only models}
 \label{ss:msm}
 
-Arguably the simplest attention-based model architecture are encoder-only models. These are models trained on a sequence reconstruction task. Examples are the BERT \cite{bert} language model family, Wav2Vec \cite{wav2vec} for speech, and SimMIM \cite{sim-mim} image model.
+Arguably the simplest attention-based model architecture is encoder-only transformers. When used in natural-language-processing (NLP) they are known as bi-directional language models, because they allow information to flow in both directions. Examples are the BERT \cite{bert} language model family, Wav2Vec \cite{wav2vec} for speech, and SimMIM \cite{sim-mim} image model.
 
-These models are typically used for sequence understanding tasks and classification tasks. The limitation of these kinds of models is that they  trained in a regression (MAP) setting with respect to sequences of data, or
+These models are trained on a sequence reconstruction task, called Masked Language Modeling (MLM), Masked Image Modeling (MIM), or more generally Masked Sequence Modeling, which I will discuss more in \Cref{ss:pretraining}.
+
+These models are typically used for sequence understanding tasks and classification tasks, however they can also be used for generating sequences. The limitation of these kinds of models is that their pretraining task is not efficient for training these models to generate sequences. For generating sequences, an encoder model in conjunction with a \textit{decoder} model (see \Cref{ss:encoder-decoder}), or simply a decoder-only model.
 
 \subsection{Sequence Prediction: Decoder-only models}
 \label{ss:decoder-only}
 
-Currently the most common transformer architecture is the decoder-only architecture, a diagram of which I show below in \Cref{fig:decoder-only}. These models are used for sequence prediction/generation, and trained via self-supervised learning. The distinguishing feature of a decoder-only model is that its only attention layers are self-attention layers which have a causal mask applied during training.
+A diagram of the decoder-only architecture, is shown below in \Cref{fig:decoder-only}. The distinguishing feature of a \textit{decoder} as opposed to an encoder is that its attention layers are all causally-masked self-attention layers as in \Cref{fig:self-attn-causal}. These models are used for sequence prediction/generation, and trained via self-supervised learning.
 
 Some examples of where we see this architecture in use are:
 \begin{itemize}
@@ -139,46 +145,62 @@ Some examples of where we see this architecture in use are:
     \item Latent code prediction (the ``prior'') in VQ-GAN \cite{vqgan}
 \end{itemize}
 
-\TODO{ Figure of full decoder-only model / next-token prediction. }
+
+\input{figures/transformers.tex}
+
 
 \subsection{Encoder-decoder models}
+\label[]{ss:encoder-decoder}
 
 When the transformer was introduced in \cite{attention-is-all-you-need}, the first architecture proposed was an encoder-decoder architecture. This is a model which has both an encoder and a decoder. The encoder is used to encode a sequence of \textit{conditioning} or \textit{context} inputs, and the decoder is used to generate the output sequence. The encoder and decoder are connected by cross-attention layers (see \Cref{fig:cross-attn}), which allow the decoder to attend to the encoded context sequence.
 
+These are the most flexible class of model, because they allow predicting some outputs, or sequences of outputs, \textit{given} some inputs.
+
 Examples of this are the original transformer architecture \cite{attention-is-all-you-need}, the BART \cite{bart} model, and more recently Google's Parti multi-modal text-to-image model \cite{parti}.
 
+In \cite{attention-is-all-you-need}, they train an encoder-decoder architecture for text translation. Their architecture takes one sequence of text tokens (if you are wondering what text tokens are, I will discuss input formats in the next section) in language A as conditioning input, then auto-regressively samples a target sequence in a second language B. The two languages may have very different word orderings or numbers of words to each other, but the cross-attention operation introduces no bias towards aligned word orderings or even word counts.
 
-% transformers first described in "attention is all you need" and have been pushing the state of the art in all domains
+\subsection{Unified attention models}
 
-% they are a model with a number of useful properties such as permutation invariance (set semantics) and
+As we see in \ref{fig:unified-attn}, there are actually two ways we might include information from the encoded sequence into the decoded sequence. In the first, which is used in most encoder/decoder models including the original, all the layers of the encoder are computed fully, and the final encoded sequence is provided to the decoder at all layers via cross-attention. In the second, the encoder is separated from the decoder only by correct application of masking in the attention layers, and is only computed up to the layer which is being decoded at.
 
-% there are multiple variations
+\begin{figure}
+    \includegraphics[width=\linewidth]{figures/attention_masks.pdf}
+    \caption[Attention Masks]{Masking in unified attention layers \cite{unilm,t5}. The bi- and uni-directional attention can be performed within a single attention layer.}
+    \label{fig:unified-masking}
+\end{figure}
 
-% \subsection {Encoders vs. Decoders}
-% \label{ss:enc-vs-dec}
+The different layouts that can be used are shown in \Cref{fig:unified-masking}.
 
-% As we saw above the encoder differs from the decoder in that the decoder is trained with a causal mask, and the encoder is trained with some other variation such as random masking. When run in inference, they can both be used auto-regressively, but a decoder-only model is more effective at this task, because this is all it was trained to do. The training data for the decoder does not have any other examples in it such as ``fill-in-the-blank'' tasks.
+The first method is more efficient because the attention matrices of the encoder and the decoder are split, using $O(N^2 +M^2)$ memory rather than $O(N^2M^2)$. However, the second method is conceptually simpler and is better when the trained model will be used for fine-tuning/transfer learning \cite{t5}., because it uses the  decoder to attend to the encoded sequence at any layer, and not just the final layer. This is useful for tasks such as image captioning, where the decoder may want to attend to the encoded image at multiple layers, and not just the final layer.
 
-% \subsection{Explicit Decoder Targeting}
-% \label{ss:pure-query}
+Tranformer models trained on a mix of pre-training tasks using this architecture are known as T5 models (\textbf{T}ext-\textbf{T}o-\textbf{T}ext \textbf{T}ransfer \textbf{T}ransformers) \cite{t5}.
 
-% While it is typical for a decoder to predict the tokens of a sequence in some particular order, we are not limited to this. We can also use the decoder to predict the tokens of a sequence in any order.
+\subsection{Comparison of architectures}
 
-% This is the approach taken in, for example, ``Order Matters: Sequence to sequence for sets'' \cite{order-matters}.
+Decoder-only models
 
 
 
-% Try this paper: "Fast Transformer Decoding: One Write-Head is All You Need"
+\section{Pretraining tasks}
+\label{ss:pretraining}
+A \textit{pre-training task} is a self-supervised task used to train a transformer. There are two main pre-training methods for transformer models which I have already mentioned: \textit{Masked Sequence Modeling} and \textit{Auto-regressive Sequence Modeling} (ASM).
 
-% https://arxiv.org/pdf/2112.05329.pdf
-% FaceFormer: Speech-Driven 3D Facial Animation with Transformers
+In masked sequence modeling (MSM), the model is trained to reconstruct the original sequence, but with some of the inputs masked out. An example of this for a language model is shown in \Cref{fig:xlm}.
 
-% - 1 -
-% Practical Parameterization of Rotations Using the Exponential Map
+\begin{figure}
+    \includegraphics[width=\linewidth]{figures/XLM.pdf}
+    % \vspace{-0.4cm}
+    \caption[Masked Language Model Pretraining]{Cross-lingual masked language model pretraining, from \cite{cross-lingual-mlm}.
 
-%A Spatio-temporal Transformer for 3D Human Motion Prediction
+    Top: The standard MLM pretraining task. A sequence of text tokens are given as input, some are masked and the model is trained to predict the masked tokens.
 
-% https://github.com/guillefix/transflower-lightning
-% Transflower: Probabilistic autoregressive dance generation with multimodal attention
+    Bottom: The cross-lingual MLM pretraining task. A sequence of text tokens from two different languages are given as input, some tokens are masked and the model is trained to predict the masked tokens. The model is trained on a mixture of monolingual and cross-lingual examples.}
+    \label{fig:xlm}
+\end{figure}
 
-% https://github.com/maxeonyx/msc-cgt-mnist/blob/5d8787e5f70a0e4c7ef5fcd810891303d700149a/cgt-mnist/entropy-ordering.ipynb
+The inputs to the tranformer models are typically sequences of discrete tokens, which each have a corresponding entry in a learned codebook of latent vectors. Masking out an input in this context means adding an additional token and learned embedding``<mask>'' to the codebook, which is used to represent the masked out inputs. As we can see in the figure, the masked positions still have embeddings of the positional information, which is necessary because a transformer model has no implicit order information available to it.
+
+The second main pre-training task is auto-regressive sequence modeling, where the model is trained to predict the next token in a sequence, given the previous tokens. For this pre-training task the model must have a causal mask applied to its attention layers, so that it can only attend to previous tokens, as in \Cref{fig:self-attn-causal}.
+
+In the next chapter (\Cref{C:a-o-sampling}) I experiment with a new pre-training task, which is a variation on auto-regressive sequence modeling, which I call \textit{arbitrary-order autoregressive pretraining}, which I will later apply to hand motion prediction.

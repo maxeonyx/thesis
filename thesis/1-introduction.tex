@@ -19,7 +19,7 @@
 \caption[The relationship between the different fields in this thesis]{How learnings and experiments from different fields contribute to each other in this thesis.}
 \end{figure}
 
-In this thesis I discuss the learnings and experimentds from the past year, which are at the intersection of two areas: Deep Learning and Computer Graphics. There are three main areas of focus:
+In this thesis I discuss my learnings and experiments from the past year, which are at the intersection of two areas: Deep Learning and Computer Graphics. There are three main areas of focus:
 \begin{enumerate}
     \item I experiment with \textit{transformer} models, and understand them in depth (\Cref{C:transformers}).
     \item I experiment with using Transformer models for Bayesian inference, essentially as Gaussian Processes (\Cref{C:a-o-sampling}).
@@ -31,6 +31,9 @@ Although much of my work is summarizing others' research and presenting my learn
     \item I present experiments with \textit{dynamically-ordered} auto-regressive sampling, which utilises the \textit{permutation-invariance} of the attention operation in transformer models.
     \item I present a proof-of-concept transformer-based generative model for hand motion prediction, which can be used to predict hand motion at arbitrary target frames, and to predict the joints of a hand in any order within that frame.
 \end{enumerate}
+These contributions involved training neural networks (see \Cref{fig:context}), in particular transformers, on two datasets - MNIST, and a motion capture dataset of hand motion. The results of these experiments are presented in \Cref{C:a-o-sampling} and \Cref{C:hand-model} respectively.
+
+\input{figures/context.tex}
 
 In the rest of this chapter, I will discuss the motivation for this thesis, and previous work that relates to it.
 
