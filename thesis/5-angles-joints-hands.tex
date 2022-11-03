@@ -1,13 +1,26 @@
 \chapter{Angles, Joints and Hands}
 \label{C:angles-joints-hands}
 
-To a first approximation, the human hand has 23 degrees of freedom.
-
-Each hand has 16 joints - three per digit, plus the wrist. The wrist and the first joint on each digit (the metacarpophalangeal (MCP) joints) can rotate on two axes, and so each have 2 degrees of freedom. The rest (the proximal- and distal-interphalangeal (PIP \& DIP) joints) can only rotate on one axis, and have 1. This naive counting gives 22 degrees of freedom. In addition, we usually consider rotation of the forearm (about the longitudinal axis) to be part of the hand, modeling it as a third degree of freedom of the wrist, which brings the total to 23 degrees of freedom.
-
-Considering that different combinations of joint angles can have very {\Symbola\Large\Large\symbol{"1F91E}} different {\Symbola\Large\Large\symbol{"1F919}} meanings {\Symbola\Large\Large\symbol{"1F44C}}, animators have a lot of work to do when bringing a digital character to life. Small mistakes can cause a character to look unnatural, but in many scenes getting the hands perfect goes unnoticed.
+Before I discuss my experiments training a model on hand motion data in the next chapter, I will first introduce some background related to modeling human hands, so we can understand many of the implementation choices I made.
 
 \section{Parameterizing Hand Configurations}
+
+To a first approximation, the human hand has 23 degrees of freedom.
+
+\begin{figure}
+    \includegraphics[width=\linewidth]{figures/hand-joints.pdf}
+    \captionsetup{parskip=7pt}
+    \caption[Joints of the hand]{Each hand has 16 joints - three per digit, plus the wrist.
+
+    The wrist and the first joint on each digit (the metacarpophalangeal (MCP) joints) can rotate on two axes, and so each have 2 degrees of freedom. The rest (the proximal- and distal-interphalangeal (PIP \& DIP) joints) can only rotate on one axis, and have 1.
+
+    This naive counting gives 22 degrees of freedom. In addition, we usually consider rotation of the forearm (about the longitudinal axis) to be part of the hand, modeling it as a third degree of freedom of the wrist, which brings the total to 23 degrees of freedom.}
+    \label{fig:hand-joints}
+\end{figure}
+
+As we can see in \Cref*{fig:hand-joints},
+
+Considering that different combinations of joint angles can have very {\Symbola\Large\Large\symbol{"1F91E}} different {\Symbola\Large\Large\symbol{"1F919}} meanings {\Symbola\Large\Large\symbol{"1F44C}}, animators have a lot of work to do when bringing a digital character to life. Small mistakes can cause a character to look unnatural, but in many scenes getting the hands perfect goes unnoticed.
 
 It is not so straightforward to assign an angle to each of those 23 degrees of freedom. There are a variety of different parameterizations of the joints we might choose from, and additionally we have the option of placing constraints on the range of values that the angles can take. In this section we will discuss some of the most common parameterizations, and the pros and cons of each.
 

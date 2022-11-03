@@ -9,11 +9,11 @@ Many of the recent amazing results in deep learning have been achieved with a cl
     \item The variety of different tasks that these model are trained on and used for, building up to the next chapter where I introduce an extremely generic gaussian-process-like task.
 \end{itemize}
 
-Firstly, I will discuss the defining feature of a transformer which is including at least one \textit{attention} operation.
+Firstly, I will discuss the attention operation that under-pins transformers.
 
 \section{The Attention Operation}
 
-Attention is a biologically-inspired mechanism that allows a model to recieve inputs from distant parts of the input data, as weighted by the \textit{attention} given to those parts, which is computed from the data itself. This has proven extremely useful for diverse tasks including machine translation, image generation, and more. In this section I will describe the attention operator.
+Attention is a biologically-inspired mechanism that allows a model to recieve inputs from distant parts of the input data, weighted by the \textit{attention weight} given to those inputs, which is typically computed from the data itself. This has proven extremely useful for diverse tasks including machine translation, image generation, and more. In this section I will describe the attention operator.
 
 Attention has a number of useful properties which come from its mathematical construction, such as permutation-invariance in the inputs.
 
@@ -37,9 +37,9 @@ An attention operation is of the following form, using short summation notation,
 \end{gather*}\vspace{-10pt}\\
 The innermost multiplication of $Q$ and $K$ is simply the inner product (dot product) between vectors $Q_m$ and $K_n$. This however is not inherent. Instead of the inner product, we can substitute any kernel function. (Although this is not usually done because the inner product is the most natural choice, and is efficient to compute)
 
-For clarity, the expanded form of the attention computation, resulting in the unnormalized attention weights $\mathbf{A}$, for an arbitrary kernel function $k$, is as follows:
+For clarity, the expanded form of the attention computation, resulting in the unnormalized attention weights $A$, for an arbitrary kernel function $k$, is as follows:
 \begin{align*}
-\mathbf{A}_{mn} = k(Q_m, K_n)
+A_{mn} = k(Q_m, K_n)
 &= \begin{bmatrix}
     k(Q_{1}, K_{1}) & k(Q_{1}, K_{2}) & \cdots & k(Q_{1}, K_{N}) \\
     k(Q_{2}, K_{1}) & k(Q_{2}, K_{2}) & \cdots & k(Q_{2}, K_{N}) \\
@@ -61,30 +61,30 @@ For clarity, the expanded form of the attention computation, resulting in the un
 &= Q K^T .
 \end{align*}
 
-We can see that the attention weights $mathbf{A}$ have shape $M×N$. This is the primary drawback of the attention operation. $M$ and $N$ are typcially both large, and the takes $O(MN)$ space and time to compute. Despite this drawback, the attention operation has proven extremely useful in a variety of tasks. There are many different ways to address this but I will not discuss them.
+We can see that the attention weights $A$ have shape $M×N$. This is the primary drawback of the attention operation. $M$ and $N$ are typcially both large, and the takes $O(MN)$ space and time to compute. Despite this drawback, the attention operation has proven extremely useful in a variety of tasks. There are many different ways to address this but I will not discuss them.
 
-\subsection{Permutation-invariance in the context inputs}
+\subsection{Permutation-invariance with respect to $K$ and $V$}
 
-The first interesting property of attention is that it is permutation-invariant with respect to the Key-Value inputs. This property is more or less useful depending on the task. For example, in the case of graphs, or sets of heterogeneous values, there may not be a natural ordering in which to process the inputs. In this case, we do not have to introduce any artificial ordering. (However, when \textit{sampling} outputs, we typically still need to decide on some order. I will discuss this in more detail in \Cref{C:a-o-sampling}).
+The first interesting property of attention is that it is permutation-invariant with respect to the key and value inputs. This property is more or less useful depending on the task. For example, in the case of graphs, or sets of heterogeneous values, there may not be a natural ordering in which to process the inputs. In this case, we do not have to introduce any artificial ordering. (However, when \textit{sampling} outputs, we typically still need to decide on some order. I will discuss this in more detail in \Cref{C:a-o-sampling}).
 
 This property is due to the construction of the attention operator. We can see that the output $O_m$ corresponding to a query vector $Q_m$ is independent of the order of the key and value vectors $K_n$ and $V_n$, because the summation across $n$ is commutative:
 \begin{align}
 \label{eqn:attn-perm-invariance}
 \begin{aligned}
-    O_m &= \sum V_n \sigma(A_{m})_n
+    O_m &= \sum_n V_n \sigma(A_{m})_n
 \end{aligned}
 \end{align}
 
-\subsection{Permutation-equivariance in the query inputs}
+\subsection{Permutation-equivariance with respect to $Q$}
 
-Attention is also permutation-\textit{equivariant} with respect to the Query inputs. This means that the value of the output $O_m$ is dependent on the value of the query vector $Q_m$, but independent of the order of all other query vectors $Q_{m'}$, $m' ≠ m$.
-This property is due to the fact that softmax operationk is equivariant to the order of its inputs, which we can see from the construction in \Cref{eqn:softmax}.
+Relatedly, attention is also permutation-\textit{equivariant} with respect to the query inputs. Equivariance means that the value of the output $O_m$ is dependent on the value of the query vector $Q_m$, but independent of the order of all other query vectors $Q_{m'}$, $m' ≠ m$.
+This property is due to the fact that softmax operation is equivariant to the order of its inputs, which we can see from the construction in \Cref{eqn:softmax}.
 
 This property of attention stands in contrast to the two main other methods used to process sequence data, convolution (CNNs) and recurrence (RNNs). Neither of these operations are invariant (or equivariant) with respect to their inputs.
 
 \subsection{Dynamic length inputs}
 
-The second (and most useful) property of attention is that it can be used to process inputs of dynamic length. We can again see this in \Cref{eqn:attn-perm-invariance}. The softmax operation normalizes the attention weights, which causes the resulting summation of vectors $V_n$ to be a convex combination. The resulting output $O_m$ will therefore sit within the convex hull of the vectors $V_n$. This means that the output $O_m$ will be a ``valid'' output regardless of the length of the input sequence $K_v$.
+The second (and most useful) property of attention is that it can be used to process inputs of dynamic length. We can again see why this is the case from \Cref{eqn:attn-perm-invariance}. The softmax operation normalizes the attention weights, which causes the resulting summation of vectors $V_n$ to be a convex combination. The resulting output $O_m$ will therefore sit within the convex hull of the vectors $V_n$. This means that the output $O_m$ will be a ``valid'' output regardless of the length of the input sequence $K_v$.
 
 \subsection{Parallel computation}
 
@@ -102,7 +102,15 @@ A transformer model puts attention operations together with MLP blocks similarly
 
 In \Cref{fig:residual-block} we can see a diagram of a typical residual block in a transformer, combining an attention operation, a feed-forward layer, and a residual connection as in a ResNet.
 
-\input{figures/residual-block.tex}
+\begin{figure}
+    \centering
+    \includegraphics[]{figures/residual-block.pdf}
+    \captionsetup{parskip=7pt}
+    \caption[Typical residual block in transformer]{Typical residual block in transformer (with the $D$ dimension expanded, rather than the $N$ or $M$ dimension as usual.).
+
+    In the MLP block, the sequence of residual latents are independently projected into a higher-dimensional space, where a non-linearity is applied, and then projected back down to the original dimension. The output of the MLP block is then projected into $Q$, $K$, and $V$ spaces, and the attention operation is applied. Finally, the results are added to the residual stream.}
+    \label{fig:residual-block}
+\end{figure}
 
 Attention is computed from the three matrices (or sequences of vectors) $Q$, $K$ and $V$. In a neural network, these are each typically derived in some fashion from the inputs to the network. The most common way to do this is to use a learned linear transformation, which is simply a matrix multiplication followed by a bias term, for example
 \begin{align}
@@ -117,7 +125,20 @@ If we derive all three matrices from the same input $\X$, then $M = N$ and the a
 
 When Q and K are derived from separate sequences of feature/embedding vectors, then in general $M ≠ N$ and this is called \textit{cross-attention}. A diagram of this is shown in \Cref{fig:cross-attention}.
 
-\input{figures/attn.tex}
+\begin{figure}
+    \centering
+    \includegraphics[]{figures/attn-1-self.pdf}
+    \caption[Self-attention]{Full self-attention (bi-directional attention), as used in transformer encoders. The blue shaded regions show which inputs are used to compute each output. In full self-attention, all inputs are used to compute all outputs.}
+    \label{fig:self-attn}
+\end{figure}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[]{figures/attn-2-cross.pdf}
+    \caption[Cross-attention]{Cross-attention, as used in encoder-decoder models.}
+    \label{fig:cross-attn}
+\end{figure}
 
 Since the introduction of transformers it is common to use \textit{multi-head} attention, which allows for multiple \textit{heads} which each perform an attention operation in parallel with smaller key dimensionality $D_{\text{head}} = \frac{D}{ n_{\text{heads}}}$.
 
@@ -146,7 +167,27 @@ Some examples of where we see this architecture in use are:
 \end{itemize}
 
 
-\input{figures/transformers.tex}
+\begin{figure}
+    \centering
+    \includegraphics[]{figures/attn-3-causal.pdf}
+    \caption[Self-attention with causal masking]{Self-attention with causal masking, (uni-directional attention) as used in transformer decoders during training. The blue shaded regions show which inputs are used to compute each output. In causal masking, only inputs to the left of the current output are used to compute the current output.}
+    \label{fig:self-attn-causal}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[]{figures/attn-4-partial.pdf}
+    \caption[Partial self-attention]{Partial self-attention, as used during incremental autoregressive inference (in models with a decoder).}
+    \label{fig:partial-self-attn}
+\end{figure}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.2\linewidth]{figures/transformers.pdf}
+    \caption[Transformer model]{Left: Encoder-only model. Right: Deocder-only model. Residual connections have been ommitted for brevity.}
+    \label{fig:encoder}
+\end{figure}
 
 
 \subsection{Encoder-decoder models}
@@ -161,6 +202,18 @@ Examples of this are the original transformer architecture \cite{attention-is-al
 In \cite{attention-is-all-you-need}, they train an encoder-decoder architecture for text translation. Their architecture takes one sequence of text tokens (if you are wondering what text tokens are, I will discuss input formats in the next section) in language A as conditioning input, then auto-regressively samples a target sequence in a second language B. The two languages may have very different word orderings or numbers of words to each other, but the cross-attention operation introduces no bias towards aligned word orderings or even word counts.
 
 \subsection{Unified attention models}
+
+\begin{figure}
+    \centering
+    \includegraphics[]{figures/attn-5-unified.pdf}
+    \captionsetup{parskip=7pt}
+    \caption[Unified attention]{Unified self- and cross-attention, as in \cite{unilm}.
+
+    Bi- and uni-directional attention can be performed with the same attention layers with careful masking, allowing the same model to be trained on any mixture of pre-training tasks.
+
+    The ``encoder'' outputs $X'$ are computed with full self-attention, and the ``decoder'' outputs $Y'$ are computed with full attention with respect to $X$ and causal attention with respect to $Y$.}
+    \label{fig:unified-attn}
+\end{figure}
 
 As we see in \ref{fig:unified-attn}, there are actually two ways we might include information from the encoded sequence into the decoded sequence. In the first, which is used in most encoder/decoder models including the original, all the layers of the encoder are computed fully, and the final encoded sequence is provided to the decoder at all layers via cross-attention. In the second, the encoder is separated from the decoder only by correct application of masking in the attention layers, and is only computed up to the layer which is being decoded at.
 

@@ -1,6 +1,17 @@
 \chapter{Sampling Sequences In Any Order}
 \label{C:a-o-sampling}
 
+In this chapter I investigate learning auto-regressive transformers to generate pixels of the MNIST dataset. By changing the model architecture and training procedure, I show that we can learn to generate pixels in any order, including dynamically choosing the order of the pixels while sampling. In effect, we learn a model that can be used as a Gaussian process on this dataset.
+
+In particular, I compare the following sampling orders with my model:
+\begin{itemize}
+    \item Left-to-right, top-to-bottom
+    \item Random
+    \item Highest-entropy-first
+    \item Lowest-entropy-first
+\end{itemize}
+
+Contrary to my hypothesis that a lowest-entropy-first sampling order would result in the best samples, I find that this biases the samples towards images with large amounts of empty background, such as images of 1s. Correspondingly, a highest-entropy-first sampling order biases the samples towards images of 8s and 9s.
 
 \section{Autoregressive models}
 
@@ -25,16 +36,6 @@ Independence assumptions are another way to reduce the number of parameters. For
 When we use an auto-regressive model to predict sequences, we usually choose some fixed order. For data with a temporal dimension, this is usually first-to-last, which is usually natural because the real process that generated the data had a causal structure in the temporal dimension.
 
 However, a simple ordering may not always be the best. For example, when predicting data with spatial dimensions such as pixels in images, the best ordering may not be obvious. Also, some data may have very long sequences and latency requirements (such as character animation data), where it is expensive to generate the data in order, and we would instead like to generate only particular parts of the sequence.
-
-In this chapter I investigate learning auto-regressive transformers to generate pixels of the MNIST dataset. By changing the model architecture and training procedure, I show that we can learn to generate pixels in any order, including dynamically choosing the order of the pixels while sampling. In effect, we learn a model that can be used as a Gaussian process on this dataset.
-
-In particular, I compare the following sampling orders with my model:
-\begin{itemize}
-    \item Left-to-right, top-to-bottom
-    \item Random
-    \item Highest-entropy-first
-    \item Lowest-entropy-first
-\end{itemize}
 
 \section{Changing The Transformer Input}
 \label{s:transformer-inputs}

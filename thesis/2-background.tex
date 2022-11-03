@@ -100,7 +100,51 @@ On the following pages, I give some simple ontologies of the different considera
     \item Dataset format (\Cref{fig:ontology-task})
 \end{enumerate}
 
-\input{figures/ontologies.tex}
+
+\begin{figure}
+    \centering
+    \includegraphics[]{figures/ontology-1-loss.pdf}
+    \vspace{1cm}
+    \captionsetup{parskip=7pt}
+    \caption[Ontology of loss functions.]{We can split loss functions into two categories.
+
+    In the former, the loss function has the form of an error function. When minimizing this function, the model learns to output the expected value of the posterior $\E\left[p(y \mid x)\right]$ of the output $y$ given the input $x$. This is called a regression or maximum-a-posteriori (MAP) task.
+
+    In the latter, the loss function has the form of a negative-log-likelihood (NLL) function. The model outputs the parameters of a probability distribution, and the loss function is the negative log-likelihood of the data under that distribution. This includes the case of categorical NLL (also called categorical cross-entropy), where the model outputs a probability distribution over a discrete set of classes.
+
+    Models trained with a NLL loss learn to output an explicit posterior distribution $p(y \mid x)$, given a fixed functional form for $p$, such as a Gaussian, mixture of Gaussians, Categorical, Von-Mises, etc. Depending on the task, and output format, different functional forms for $p$ may be appropriate.}
+    \label{fig:ontology-loss}
+\end{figure}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[]{figures/ontology-2-task.pdf}
+    \vspace{1cm}
+    \captionsetup{parskip=7pt}
+    \caption[Ontology of dataset types]{Basic ontology of dataset types.
+
+    When learning on unlabeled data, the goal is to learn a representation of the data that is useful for some downstream task.
+
+    When learning on data that is explicitly labeled -- the goal is to learn a model that performs well on the task directly.}
+    \label{fig:ontology-task}
+\end{figure}
+
+
+
+\begin{figure}
+    \centering
+    \includegraphics[]{figures/ontology-3-input-shape.pdf}
+    \vspace{1cm}
+    \captionsetup{parskip=7pt}
+    \caption[Fixed vs variable input shape]{Neural network variants which support variable input shape.
+
+    Due to their construction, MLPs and ResNets are restricted to a fixed input shape, and so can only be trained and used on data that is of a fixed size, such as tabular data, or data that has been processed into a fixed size by re-sampling, chunking etc.
+
+    RNNs, CNNs and Transformers can accept variable length data, each with their own tradeoffs. They are typically more suitable for data that is naturally of variable size/length, such as text, audio or images.}
+    \label{fig:ontology-input-shape}
+\end{figure}
+
 
 The choice of training objective affects the settings in which a model can be used, which theoretical properties we get from it, and more. The structure of the data affects the type of model that can be used, and the format of the dataset affects what tasks we can learn from it.
 

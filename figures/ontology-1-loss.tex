@@ -1,0 +1,34 @@
+\documentclass[crop,tikz]{standalone}
+
+\input{figure-preamble}
+
+\begin{document}
+\begin{tikzpicture}
+    \tikzstyle{every node}=[node distance=4cm,minimum height=0.8cm]
+    % loss functions
+    \node[draw,fill=black,minimum height=0.2cm,circle] (lossroot) at (0,0) {};
+    \node[above of=lossroot, node distance=1cm] {Loss Functions};
+
+    % regression
+    \node[draw,fill=black,minimum height=0.2cm,circle, below left of=lossroot] (regressionroot)  {};
+    \draw[->] (lossroot) -- node[fill=white] {Regression} (regressionroot);
+
+    \node[draw,below left of=regressionroot] (mse)  {Squared Error};
+    \draw[->] (regressionroot) -- node[fill=white] {Reals} (mse.north);
+    \node[draw,below right of=regressionroot] (amse) {Squared Angular Error};
+    \draw[->] (regressionroot) -- node[fill=white] {Angles} (amse.north);
+
+    % parameter estimation
+    \node[draw,fill=black,minimum height=0.2cm,circle,right of=amse] (param) {};
+    \draw[->] (lossroot) -- node[fill=white] {Parameter Estimation} (param);
+    \node[draw,below of=param] (gaussian) {Gaussian NLL};
+    \draw[->] (param) -- node[fill=white] {Reals} (gaussian.north);
+
+    \node[draw,below right of=param] (angles) {Von-Mises NLL};
+    \draw[->] (param) -- node[fill=white] {Angles} (angles.north);
+
+    \node[draw,below left of=param] (softmax) {Categorical NLL};
+    \draw[->] (param) -- node[fill=white] {Categorical} (softmax.north);
+
+\end{tikzpicture}
+\end{document}

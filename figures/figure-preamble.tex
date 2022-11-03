@@ -1,0 +1,23 @@
+\usepackage{fontspec}
+\setmainfont{texgyrepagella}[
+  Extension = .otf,
+  UprightFont = *-regular,
+  BoldFont = *-bold,
+  ItalicFont = *-italic,
+  BoldItalicFont = *-bolditalic,
+]
+
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathreplacing,calligraphy}
+\usetikzlibrary{calc}
+
+\makeatletter % https://tex.stackexchange.com/a/38995/121799
+\tikzset{
+  use path/.code={\pgfsyssoftpath@setcurrentpath{#1}}
+}
+\makeatother
+\tikzset{reverseclip/.style={insert path={(current bounding box.north
+        east) rectangle (current bounding box.south west)}}}
+
+\pgfdeclarelayer{bg}
+\pgfsetlayers{bg,main}

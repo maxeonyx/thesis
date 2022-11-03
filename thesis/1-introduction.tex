@@ -33,7 +33,18 @@ Although much of my work is summarizing others' research and presenting my learn
 \end{enumerate}
 These contributions involved training neural networks (see \Cref{fig:context}), in particular transformers, on two datasets - MNIST, and a motion capture dataset of hand motion. The results of these experiments are presented in \Cref{C:a-o-sampling} and \Cref{C:hand-model} respectively.
 
-\input{figures/context.tex}
+\begin{figure}
+    \centering
+    \input{figures/context.tex}
+    \vspace{1cm}
+    \captionsetup{parskip=7pt}
+    \caption[Where my work sits.]{The later work in this thesis sits focuses on learning un-labeled sequence data with transformers, in two different domains.
+
+    In \Cref{C:a-o-sampling}, I train a transformer-based probabilistic model which can be used as a gaussian process for predicting pixels on the MNIST dataset.
+
+    In \Cref{C:hand-model}, I train a transformer-based model on the ManipNet hand motion dataset. \Cref{S:mean-model} focuses on a deterministic model, while \Cref{S:prob-model} focuses on a probabilistic model.}
+    \label{fig:context}
+\end{figure}
 
 In the rest of this chapter, I will discuss the motivation for this thesis, and previous work that relates to it.
 

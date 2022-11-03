@@ -1,0 +1,37 @@
+\documentclass[crop,tikz]{standalone}
+
+\input{figure-preamble}
+
+\begin{document}
+\begin{tikzpicture}
+    \tikzstyle{every node}=[node distance=3.5cm,minimum height=0.8cm]
+    \node[draw,fill=black,minimum height=0.2cm,circle] (taskroot) at (0,0) {};
+    \node[above of=taskroot, node distance=1cm] {Dataset Type};
+
+    % unlabeled data
+    \node[draw,fill=black,minimum height=0.2cm,circle, below right of=taskroot] (unlabeled)  {};
+    \draw[->] (taskroot) -- node[fill=white] {Un-labeled} (unlabeled);
+
+    % representation learning
+    \node[draw, below left of=unlabeled] (representation)  {Representation Learning};
+    \draw[->] (unlabeled) -- (representation.north);
+
+    % sequence prediction
+    \node[draw, below right of=unlabeled] (nexttoken) {Sequence Prediction};
+    \draw[->] (unlabeled) -- (nexttoken.north);
+
+    % labeled
+    \node[draw,fill=black,minimum height=0.2cm,circle,left of=representation] (labeled) {};
+    \draw[->] (taskroot) -- node[fill=white] {Labeled} (labeled);
+
+    % classification
+    \node[draw,below left of=labeled] (classification) {Classification};
+    \draw[->] (labeled) -- (classification.north);
+
+    % regression
+    \node[draw,below right of=labeled] (regression) {Regression};
+    \draw[->] (labeled) -- (regression.north);
+
+
+\end{tikzpicture}
+\end{document}

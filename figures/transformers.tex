@@ -1,11 +1,8 @@
+\documentclass[crop,tikz]{standalone}
 
+\input{figure-preamble}
 
-% \pgfdeclarelayer{bg}
-% \pgfsetlayers{bg,main}
-
-
-\begin{figure}
-    \centering
+\begin{document}
     \begin{tikzpicture}
         \tikzstyle{every node}=[minimum width=0.7cm, minimum height=0.7cm,anchor=west]
 
@@ -41,16 +38,18 @@
                 \foreach \x in {0,...,7} {
                     \draw[->] (o_\lay_\x.south) -- (ff_\layy_\x.north);
                     \draw[->] (ff_\layy_\x.south) -- (a1_\layy_\x.north);
-                    \begin{scope}[every path/.append style={draw=blue,fill=blue,fill opacity=0.1,draw opacity=0.2}, blend group=darken]
-                        \fill[blue] (o_\layy_\x.north) -- ([xshift=-4pt]a1_\layy_0.south) -- ([xshift=4pt]a1_\layy_7.south) -- cycle;
-                    \end{scope}
+                    \begin{pgfonlayer}{bg}
+                        \begin{scope}[every path/.append style={draw=blue,fill=blue,fill opacity=0.1,draw opacity=0.2}, blend group=darken]
+                            \fill[blue] (o_\layy_\x.north) -- ([xshift=-4pt]a1_\layy_0.south) -- ([xshift=4pt]a1_\layy_7.south) -- cycle;
+                        \end{scope}
+                    \end{pgfonlayer}
                 }
             }
             \foreach \x in {0,...,7} {
                 \draw[->] (o_4_\x.south) -- (p_0_\x.north);
             }
 
-            \draw[thick,decorate,decoration={calligraphic brace,raise=5pt, amplitude=5pt}] (o_0_0.north) -- node[draw=none,above=10pt] {Sequence Dimension $N$} (o_0_7.north);.2cm) {};
+            \draw[thick,decorate,decoration={calligraphic brace,raise=5pt, amplitude=5pt}] (o_0_0.north) -- node[draw=none,above=10pt] {Sequence Dimension $N$} (o_0_7.north) {};
 
 
         \end{scope}
@@ -88,9 +87,11 @@
                 \foreach \x in {0,...,7} {
                     \draw[->] (o_\lay_\x.south) -- (ff_\layy_\x.north);
                     \draw[->] (ff_\layy_\x.south) -- (a1_\layy_\x.north);
-                    \begin{scope}[every path/.append style={draw=blue,fill=blue,fill opacity=0.1,draw opacity=0.2}, blend group=darken]
-                        \fill[blue] (o_\layy_\x.north) -- ([xshift=-4pt]a1_\layy_0.south) -- ([xshift=4pt]a1_\layy_\x.south) -- cycle;
-                    \end{scope}
+                    \begin{pgfonlayer}{bg}
+                        \begin{scope}[every path/.append style={draw=blue,fill=blue,fill opacity=0.1,draw opacity=0.2}, blend group=darken]
+                            \fill[blue] (o_\layy_\x.north) -- ([xshift=-4pt]a1_\layy_0.south) -- ([xshift=4pt]a1_\layy_\x.south) -- cycle;
+                        \end{scope}
+                    \end{pgfonlayer}
                 }
             }
             \foreach \x in {0,...,7} {
@@ -101,6 +102,4 @@
         \end{scope}
 
     \end{tikzpicture}
-    \caption[Transformer model]{Left: Encoder-only model. Right: Deocder-only model. Residual connections have been ommitted for brevity.}
-    \label{fig:encoder}
-\end{figure}
+\end{document}
