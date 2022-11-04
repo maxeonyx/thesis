@@ -15,11 +15,16 @@ Contrary to my hypothesis that a lowest-entropy-first sampling order would resul
 
 \section{Autoregressive models}
 
-When modeling data, it is often useful to have a \textit{probabilitic} model of the data, rather than a deterministic model. This allows us to quantify uncertainty about the model outputs, sample from the model, and avoid problems with multi-modal distributions.
+When modeling data, it is often useful to have a \textit{probabilitic} model of the data, rather than a deterministic model. This allows us to quantify uncertainty about the model outputs, sample from the model, and avoid problems with multi-modal distributions. However, when the data we are modeling is high-dimensional, probabilistic models often become computationally expensive or intractable.
 
-However, when the data we are modeling is high-dimensional, probabilistic models often become computationally expensive or intractable. For example, if we are modeling a sequence of $N$ observations, and each observation is a $D$-dimensional vector, then even a simple gaussian distribution over the  sequence has $DN + (DN)^2$ parameters ($DN$ means, plus a $DN \times DN$ covariance matrix). In addition, it is not natural to model sequences of arbitrary length with this approach.
 
 \subsection{Distributions over high-dimensional data}
+
+For example, let us imagine we are modeling a sequence of $N$ observations $\x_i \in \R^D$, $1 ≤ i ≤ N$ (each observation is a $D$-dimensional vector). To represent the joint distribution over this data, even with a simple gaussian distribution requires $DN + (DN)^2$ parameters ($DN$ means, plus a $DN \times DN$ covariance matrix). If $N$ is large, this is a very large number of parameters, but still manageable.
+
+A gaussian however is limited in its ability to model the data. For example, it cannot model multi-modal distributions. To model multi-modal distributions, we could use a mixture of gaussians, but this increases the number of parameters even further, to $(DN + (DN)^2)K + K$, where $K$ is the number of mixture components, making sampling and inference much more expensive.
+
+In general, the more expressive the family of distributions we use to model the data, the more parameters we need to represent the distribution and the more expensive it is to sample from the distribution.
 
 There are a few main approaches to address this problem, which I show below:
 
@@ -29,9 +34,11 @@ There are a few main approaches to address this problem, which I show below:
     \item Auto-regressive factorization
 \end{itemize}
 
-We can discretize the data, and model it as a sequence of discrete variables. For example, we can use a clustering algorithm to learn a series of $K$ points within our $(DN)^2$ high-dimensional space, and then form a discrete distribution over these points. A discrete distribution over $K$ points has $K-1$ free parameters, so this approach reduces the number of parameters from $(DN)^2$ to $K-1$, and makes sampling and inference more efficient. However the discretization changes the domain of the data, which may not always be useful.
+One approach to managing the intractibility of high-dimensional data is to discretize the data, and then model it with a categorical distribution. For example, we can use a clustering algorithm to learn a series of $K$ points within our $DN$-dimensional space, and then form a discrete distribution over these points. A discrete distribution over $K$ points has $K-1$ free parameters, so this approach reduces the number of parameters from $(DN)^2$ to $K-1$, and makes sampling and inference more efficient. However the discretization changes the domain of the data, which may not always be useful. Additionally, the larger the domain, the more cluster points we need to use, and we might not be able to find a good clustering of the data.
 
-Independence assumptions are another way to reduce the number of parameters. For example, we can assume that the observations are independent, and model them as a product of $N$ independent distributions. For a Gaussian, this means fixing parts of the co-variance matrix, often having only a single variance parameter. A signle variance parameter reduces the number of parameters from $(DN)^2$ to $DN$, but it also makes the model less expressive. For sequence data, this assumption is almost never valid along the sequence dimension, so this approach is not very useful.
+Independence assumptions are another way to reduce the number of parameters. For example, we could assume that the observations $\x_i$ are independent, and then model the sequence as a product of $N$ independent $D$-dimensional distributions. For a Gaussian, this means fixing parts of the co-variance matrix, and we often reduce to having a single variance parameter. A single variance parameter reduces the number of parameters from $(DN)^2$ to $DN$, but it also makes the model less expressive. For sequence data, this assumption is almost never valid along the sequence dimension, so this approach is not very useful.
+
+Auto-regressive factorization is a third approach to reducing the number of parameters. In this approach, we break down the joint distribution over the sequence into a product of conditional distributions, where each conditional distribution depends only on the previous observations.
 
 When we use an auto-regressive model to predict sequences, we usually choose some fixed order. For data with a temporal dimension, this is usually first-to-last, which is usually natural because the real process that generated the data had a causal structure in the temporal dimension.
 

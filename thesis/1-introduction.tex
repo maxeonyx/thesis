@@ -55,7 +55,10 @@ The problem domain I focused on -- hand motion prediction -- is a sequence predi
 \subsection{Why focus on hand motion?}
 \label{ss:why-hand-motion}
 
-Whenever a moving virtual character appears in an animated film or a video game, someone had to spend the time to specify the angles of all the joints. Fortunately is not necessary to lay out every single frame, because animation tools used for both games and film production make use of interpolation techniques between key-frames, but artists must still specify many joints, over many key-frames, over many different kinds of animation.
+Whenever a moving virtual character appears in an animated film or a video game, someone had to spend the time to specify the angles of all the joints.
+Considering that different combinations of joint angles can have very {\Symbola\Large\Large\symbol{"1F91E}} different {\Symbola\Large\Large\symbol{"1F919}} meanings {\Symbola\Large\Large\symbol{"1F44C}}, animators have a lot of work to do when bringing a digital character to life. Fortunately is not necessary to lay out every single frame, because animation tools used for both games and film production make use of interpolation techniques between key-frames, however artists must still specify many joints, over many key-frames, over many different kinds of animation.
+
+
 
 In order to fully animate a character, an animator needs to appropriately animate all moving parts of that character. We can divide these into three groups, each involving a similar amount of work:
 \begin{itemize}
@@ -64,7 +67,7 @@ In order to fully animate a character, an animator needs to appropriately animat
     \item Body animation (also simply called character animation) -- animating the rest of the body, e.g. the legs, arms, neck and spine when a character walks, dances, etc.
 \end{itemize}
 
-Of these, the face and body are often the most noticeable, and most of the time recieve the most attention from the audience. However, the hands are also very important, and are often the most difficult to animate.
+Of these, the face and body are often the most noticeable, and most of the time recieve the most attention from the audience. However, the hands are also very important, and are often the most difficult to animate, owing to the diversity of configurations and the hierachy of the bones. Small mistakes can cause a character to look unnatural, breaking immersion for a viewer or player. Disappointingly, despite the amount of work it can take to animate the hands, for many scenes, hands are perfectly animated when they simply go unnoticed.
 
 \TODO{Examples of problematic hand animation.}
 
