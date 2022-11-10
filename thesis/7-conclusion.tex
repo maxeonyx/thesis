@@ -1,2 +1,22 @@
 \chapter{Conclusions}
 \label{C:conclusion}
+
+To conclude, I will summarize the main conclusions from the experiments in \Cref{C:a-o-sampling} and \Cref{C:hand-model}, and share some reflections on the thesis.
+
+\section{Conclusions}
+
+\TODO{Add conclusions from the experiments.}
+
+\section{Reflections}
+
+If I had known what I know now at the start of my project, what would I have done differently?
+
+First, training neural networks can be very finnicky. Instead of trying new architectures and model types, I later found that changing the weight initialization, learning rate, and regularization loss terms have a much bigger impact, including on whether the network learns anything reasonable at all. I would have spent more time tuning these hyperparameters, and less time tuning the number of layers, number of neurons, activation functions, and other architecture choices. Relatedly, during the middle of my project, I was working with a custom implementation of a transformer, which was learning poorly. If I was experimenting primarily with these different kinds of hyperparameters, I would have kept using the standard transformer implementation, which would have saved me significant implemenation and debugging time.
+
+Second, training with Masked Sequence Modeling is sufficient to represent the task I was trying to achieve in Chapter 4, but I didn't know this at the outset. I could have used a mostly-pre-implemented data pre-processing pipeline, again saving me significant implementation and debugging time.
+
+Third, running comparison experiments was forever a weak point for me. Doing this project again, I would have spent the additional effort to keep every version of my experiments working in the same codebase simultaneously, so that I could easily switch between them and compare results. Rather than modifying the implementation to run a new experiment (\textit{even if} the current model & hyperparameters were currently broken), I would have added additional flags and configurations for every experiment, and added some unit tests to make sure that the code still works when these flags are changed.  This would have meant I could have produced more meaningful results in \Cref{C:hand-model}.
+
+\section{Final words}
+
+I have really enjoyed working on this project, more than I expected at the outset. I have found a deep passion for learning about deep learning. The project has given me the opportunity to learn an insane amount about machine learning techniques, including modern methods such as transformers, and to apply this knowledge to a practical problem. I have really enjoyed working with my supervisors, and the wider VUW deep learning group, and I am grateful to them for their support and guidance. I am also grateful to my family and friends for their support and encouragement.

@@ -158,17 +158,3 @@ The simplest kind of training objective is regression. When we train a model wit
 \end{split}
 \end{align}
 This function sums the error over the \textit{feature} dimension $D$ and averages the error over the \textit{batch} dimension $N$ \footnote{Averaging has no effect on the optimization, it is simply that dividing by the batch and/or sequence length means that the loss value remains in the same range independent of the batch size or sequence length.}. Training a model by minimising this loss function, is equivalent to maximising the likelihood of a Gaussian distribution. Given input $x$, the model output $y = f(x)$ can be interpreted as $\E[p(y|x)]$.
-
-
-\section{Auto-regressive models}
-
-\TODO{ Formulation of auto-regressive models and sampling }
-
-\TODO{ Things we can do with an auto-regressive model }
-
-\section{Animation}
-
-
-\section{Angle representations}
-
-\TODO{ Quaternions and unitary / complex matrices }

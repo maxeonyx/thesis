@@ -1,0 +1,111 @@
+diff --git a/thesis.pdf b/thesis.pdf
+index 28aa3a9..6867018 100644
+Binary files a/thesis.pdf and b/thesis.pdf differ
+diff --git a/thesis/3-understanding-transformers.tex b/thesis/3-understanding-transformers.tex
+index 5ddf719..e2b8336 100644
+--- a/thesis/3-understanding-transformers.tex
++++ b/thesis/3-understanding-transformers.tex
+@@ -229,14 +229,10 @@ The first method is more efficient because the attention matrices of the encoder
+ 
+ Tranformer models trained on a mix of pre-training tasks using this architecture are known as T5 models (\textbf{T}ext-\textbf{T}o-\textbf{T}ext \textbf{T}ransfer \textbf{T}ransformers) \cite{t5}.
+ 
+-\subsection{Comparison of architectures}
+-
+-Decoder-only models
+-
+-
+ 
+ \section{Pretraining tasks}
+ \label{ss:pretraining}
++
+ A \textit{pre-training task} is a self-supervised task used to train a transformer. There are two main pre-training methods for transformer models which I have already mentioned: \textit{Masked Sequence Modeling} and \textit{Auto-regressive Sequence Modeling} (ASM).
+ 
+ In masked sequence modeling (MSM), the model is trained to reconstruct the original sequence, but with some of the inputs masked out. An example of this for a language model is shown in \Cref{fig:xlm}.
+@@ -252,6 +248,8 @@ In masked sequence modeling (MSM), the model is trained to reconstruct the origi
+     \label{fig:xlm}
+ \end{figure}
+ 
++\figure
++
+ The inputs to the tranformer models are typically sequences of discrete tokens, which each have a corresponding entry in a learned codebook of latent vectors. Masking out an input in this context means adding an additional token and learned embedding``<mask>'' to the codebook, which is used to represent the masked out inputs. As we can see in the figure, the masked positions still have embeddings of the positional information, which is necessary because a transformer model has no implicit order information available to it.
+ 
+ The second main pre-training task is auto-regressive sequence modeling, where the model is trained to predict the next token in a sequence, given the previous tokens. For this pre-training task the model must have a causal mask applied to its attention layers, so that it can only attend to previous tokens, as in \Cref{fig:self-attn-causal}.
+diff --git a/thesis/4-arbitrary-order-sampling-experiments.tex b/thesis/4-arbitrary-order-sampling-experiments.tex
+index 2512422..46b115d 100644
+--- a/thesis/4-arbitrary-order-sampling-experiments.tex
++++ b/thesis/4-arbitrary-order-sampling-experiments.tex
+@@ -38,16 +38,61 @@ One approach to managing the intractibility of high-dimensional data is to discr
+ 
+ Independence assumptions are another way to reduce the number of parameters. For example, we could assume that the observations $\x_i$ are independent, and then model the sequence as a product of $N$ independent $D$-dimensional distributions. For a Gaussian, this means fixing parts of the co-variance matrix, and we often reduce to having a single variance parameter. A single variance parameter reduces the number of parameters from $(DN)^2$ to $DN$, but it also makes the model less expressive. For sequence data, this assumption is almost never valid along the sequence dimension, so this approach is not very useful.
+ 
+-Auto-regressive factorization is a third approach to reducing the number of parameters. In this approach, we break down the joint distribution over the sequence into a product of conditional distributions, where each conditional distribution depends only on the previous observations.
++Auto-regressive factorization is a third approach to reducing the number of parameters. In this approach, we break down the joint distribution over the sequence into a product of conditional distributions, where each conditional distribution depends only on the previous observations. We then typically model all of these conditional distributions with the same model.
+ 
+-When we use an auto-regressive model to predict sequences, we usually choose some fixed order. For data with a temporal dimension, this is usually first-to-last, which is usually natural because the real process that generated the data had a causal structure in the temporal dimension.
++\begin{align}
++    \label{eqn:ar-factorization}
++    \begin{aligned}
++        p(\x_1, \x_2, \ldots, \x_N) &= \prod_i^N p(\x_i | \x_1, \ldots, \x_{i-1})
++             &= p(\x_1) p(\x_2 | \x_1) p(\x_3 | \x_1, \x_2) \ldots p(\x_N | \x_1, \ldots, \x_{N-1})
++    \end{aligned}
++\end{align}
+ 
+-However, a simple ordering may not always be the best. For example, when predicting data with spatial dimensions such as pixels in images, the best ordering may not be obvious. Also, some data may have very long sequences and latency requirements (such as character animation data), where it is expensive to generate the data in order, and we would instead like to generate only particular parts of the sequence.
++When we use an auto-regressive model to predict sequences, we usually choose some fixed order for this decomposition. For data with a temporal dimension, this is usually first-to-last, which is usually natural because the real process that generated the data had a causal structure in the temporal dimension.
+ 
+-\section{Changing The Transformer Input}
++However, it is valid to perform the decomposition in any order, for example choosing a random permutation of the sequence(s):
++
++\begin{align}
++    \label{eqn:ar-factorization-random}
++    \begin{aligned}
++        J = {5, 3, 9, 1, ..., N }
++        p(\x_1, \x_2, \ldots, \x_N) &= \prod_{i \in J}
++    \end{aligned}
++\end{align}
++
++In the case of data that does not have a temporal dimension, such as pixels in an image, or joint angles of a hand (within one frame), simple ordering may not always be the best. Also, some data may have very long sequences and latency requirements (such as character animation data), where it is expensive to generate the data in order, and we would instead like to generate only particular parts of the sequence.
++
++\subsection{Dynamically-ordered auto-regressive}
++
++If we have an auto-regressive model of the appropriate form that has beem appropriately trained, we can dynamically choose the order that we sample a sequence.
++
++In particular, our model should take data in the form $\x_i = (x_i, y_i)$, where the $x_i$ is the \textit{position} of the data in the sequence, and the $y_i$ is the actual data. Our auto-regressive factorization is then
++
++\begin{align}
++    \label{eqn:ar-factorization-dynamic}
++    \begin{aligned}
++        p(y_i \mid x_i, \x_{i-1}, \ldots, \x_1) &= \ldots
++    \end{aligned}
++\end{align}
++
++The model can be prompted to sample a particular $y_i$,  by conditioning on the corresponding $x_i$.
++
++I will now show how this relates to transformer models.
++
++\section{Training task and input formats}
+ \label{s:transformer-inputs}
+ 
+-Transformers have their input provided as (position, content) pairs, or more generally, as some kind of token embedding which is unique among the input set, such as special ``BEGIN'' or ``CLASS`` tokens.
++As we saw before in \Cref{C:transformers} we have two main tasks for training a transformer model:
++
++\begin{itemize}
++    \item \textbf{Masked Sequence Modeling}, which we use to train models with bi-directional attention - predict the masked out tokens.
++    \item \textbf{Autoregressive Sequence Prediction}, which we use to train a model that uses causal attention - predict the next token in sequence.
++\end{itemize}
++
++
++Because they are otherwise agnostic to the order of data, when the order is important transformers have their input provided as (position, content) pairs, which naturally maps onto the above auto-regressive factorization. However, not all training tasks will result in a model that learns to use the position information in this way.
++
++More generally, the input to a transformer is some kind of $D$-dimensional embedding. When specifiying both the input and content , we first project the which is unique among the input set, such as special ``BEGIN'' or ``CLASS`` tokens.
+ 
+ As we saw in \cref{C:transformers} both the attention layers and feed-forward layers are invariant to permutations of the input sequence. Additionally, there is no requirement that the input set be contiguous in the sequence dimension - there can be (potentially large) gaps, with no change to to the structure of the model (however, the model must be trained for the particular problem still).
+ 
+@@ -59,7 +104,6 @@ As a result of being invariant to permutations, and working with non-contiguous
+ \end{itemize}
+ 
+ In the next section I describe some tasks we might want to perform with these unique abilities of a transformer.
+-
+ \section{Tasks}
+ \label{s:order-tasks}
+ 
