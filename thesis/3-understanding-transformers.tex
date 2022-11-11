@@ -265,7 +265,7 @@ In masked sequence modeling (MSM), the model is trained to reconstruct the origi
 
 The inputs to the tranformer models are typically sequences of discrete tokens, which each have a corresponding entry in a learned codebook of latent vectors. Masking out an input in this context means adding an additional token and learned embedding``<mask>'' to the codebook, which is used to represent the masked out inputs. As we can see in the figure, the masked positions still have embeddings of the positional information, which is necessary because a transformer model has no implicit order information available to it.
 
-The second main pre-training task is auto-regressive sequence modeling, where the model is trained to predict the next token in a sequence, given the previous tokens. For this pre-training task the target outputs are present in the input sequence, but one token ahead. The model must therefore be a uni-directional / causally-masked model (\Cref{fig:transformers}) to prevent information flow from the future to the past and prevent the model learning degenerate behaviour., as in \Cref{fig:self-attn-causal}.
+The second main pre-training task is auto-regressive sequence modeling, where the model is trained to predict the next token in a sequence, given the previous tokens. For this pre-training task the target outputs are present in the input sequence, but one token ahead. The model must therefore be a uni-directional / causally-masked model (\Cref{fig:transformers}) to prevent information flow from the future to the past and prevent the model learning degenerate behaviour, as in \Cref{fig:self-attn-causal}.
 
 
 
