@@ -1,9 +1,15 @@
 \chapter{Sampling Sequences In Any Order}
 \label{C:a-o-sampling}
 
-In this chapter I investigate learning auto-regressive transformers to generate pixels of the MNIST dataset. By changing the model architecture and training procedure, I show that we can learn to generate pixels in any order, including dynamically choosing the order of the pixels while sampling. In effect, we learn a model that can be used as a Gaussian process on this dataset.
+In this chapter I investigate learning auto-regressive transformers to generate pixels of the MNIST dataset. By changing the model architecture and training procedure, I show that we can learn to generate pixels in any order, including dynamically choosing the order of the pixels while sampling. The learned model can be used as a stochastic process on this dataset.
 
-In particular, I compare the following sampling orders with my model:
+\section{Introduction}
+
+What is the best order to sample pixels in an image, to maximize the quality of the sample as a whole? Is it unimportant, in which case any order will do? Or does the optimal sampling order depend on the data itself?
+
+To answer this question, I train a transformer-based neural network model so that it can be used auto-regressively sample sequences of pixels in any order.
+
+I then use this model to compare the following sampling orders:
 \begin{itemize}
     \item Left-to-right, top-to-bottom
     \item Random
@@ -13,16 +19,11 @@ In particular, I compare the following sampling orders with my model:
 
 Contrary to my hypothesis that a lowest-entropy-first sampling order would result in the best samples, I find that this biases the samples towards images with large amounts of empty background, such as images of 1s. Correspondingly, a highest-entropy-first sampling order biases the samples towards images of 8s and 9s. In the discussion, I argue this occurs because the criterion we are selecting for introduces a bias, and I characterise this bias.
 
-\section{Introduction}
-
-% sampling high-dimensional data
-% choosing the order to sample in for higher-quality samples
-
 \section{Background}
 
 When modeling data, it is often useful to have a \textit{probabilitic} model of the data, rather than a deterministic model. This allows us to quantify uncertainty about the model outputs, sample from the model, and avoid problems with multi-modal distributions. However, when the data we are modeling is high-dimensional, probabilistic models often become computationally expensive or intractable.
 
-\subsection{Autoregressive models}
+\subsection{Distributions over high-dimensional data}
 
 For example, let us imagine we are modeling a sequence of $N$ observations $\x_i \in \R^D$, $1 ≤ i ≤ N$ (each observation is a $D$-dimensional vector). To represent the joint distribution over this data, even with a simple gaussian distribution requires $DN + (DN)^2$ parameters ($DN$ means, plus a $DN \times DN$ covariance matrix). If $N$ is large, this is a very large number of parameters, but still manageable.
 
@@ -38,17 +39,23 @@ There are a few main approaches to address this problem, which I show below:
     \item Auto-regressive factorization
 \end{itemize}
 
+\subsubsection{Discretization}
+
 One approach to managing the intractibility of high-dimensional data is to discretize the data, and then model it with a categorical distribution. For example, we can use a clustering algorithm to learn a series of $K$ points within our $DN$-dimensional space, and then form a discrete distribution over these points. A discrete distribution over $K$ points has $K-1$ free parameters, so this approach reduces the number of parameters from $(DN)^2$ to $K-1$, and makes sampling and inference more efficient. However the discretization changes the domain of the data, which may not always be useful. Additionally, the larger the domain, the more cluster points we need to use, and we might not be able to find a good clustering of the data.
 
+\subsubsection{Independence assumptions}
+
 Independence assumptions are another way to reduce the number of parameters. For example, we could assume that the observations $\x_i$ are independent, and then model the sequence as a product of $N$ independent $D$-dimensional distributions. For a Gaussian, this means fixing parts of the co-variance matrix, and we often reduce to having a single variance parameter. A single variance parameter reduces the number of parameters from $(DN)^2$ to $DN$, but it also makes the model less expressive. For sequence data, this assumption is almost never valid along the sequence dimension, so this approach is not very useful.
+
+\subsubsection{Auto-regressive factorization}
 
 Auto-regressive factorization is a third approach to reducing the number of parameters. In this approach, we break down the joint distribution over the sequence into a product of conditional distributions, where each conditional distribution depends only on the previous observations. We then typically model all of these conditional distributions with the same model.
 
 \begin{align}
     \label{eqn:ar-factorization}
     \begin{aligned}
-        p(\x_1, \x_2, \ldots, \x_N) &= \prod_i^N p(\x_i | \x_1, \ldots, \x_{i-1})
-             &= p(\x_1) p(\x_2 | \x_1) p(\x_3 | \x_1, \x_2) \ldots p(\x_N | \x_1, \ldots, \x_{N-1})
+        p(\x_1, \x_2, \ldots, \x_N) &= \prod_i^N p(\x_i | \x_1, \ldots, \x_{i-1}) \\
+        &= p(\x_1) p(\x_2 | \x_1) p(\x_3 | \x_1, \x_2) \ldots p(\x_N | \x_1, \ldots, \x_{N-1})
     \end{aligned}
 \end{align}
 
@@ -59,8 +66,8 @@ However, it is valid to perform the decomposition in any order, for example choo
 \begin{align}
     \label{eqn:ar-factorization-random}
     \begin{aligned}
-        J = {5, 3, 9, 1, ..., N }
-        p(\x_1, \x_2, \ldots, \x_N) &= \prod_{i \in J}
+        J = {5, 3, 9, 1, ..., N } \\
+        p(\x_1, \x_2, \ldots, \x_N) &= p(\x_1) p(\x_2 | \x_1) p(\x_3 | \x_1, \x_2) \ldots p(\x_N | \x_1, \ldots, \x_{N-1})
     \end{aligned}
 \end{align}
 
@@ -70,7 +77,7 @@ In the case of data that does not have a temporal dimension, such as pixels in a
 
 If we have an auto-regressive model of the appropriate form that has been appropriately trained, we can dynamically choose the order that we sample a sequence. The form of the model must be such the the data $\x_i$ can be split into two components `position' and `content' which we will represent with $x_i$ and $y_i$ respectively.
 
-Given some seed sequence length $i$ we have input data $\x_{<i} = \{ (x_n, y_n) \mid n < i \}$. For each remaining position $x_n$, $n ≥ i$, we can compute the conditional distribution $p(y_n | x_n,  \x_{<i})$. This gives us $N$ conditionally-independent distributions each for a different $x_n$. We can choose any statistic of these distributions to select which one to sample from. For example, we could choose the distribution with the highest entropy, or the distribution with the lowest entropy, or the distribution with the highest mean, or the distribution with the lowest mean, etc. We can then sample from the chosen distribution to get the next $y_n$. Because we sample, we in principle do not change the distribution of results -- however in practice, we may change the distribution of results because of the way we choose the statistic. I will discuss this in \Cref{S:a-o-discussion}.
+Given some seed sequence length $i$ we have input data $\x_{<i} = \{ (x_n, y_n) \mid n < i \}$. For each remaining position $x_n$, $n ≥ i$, we can compute the conditional distribution $p(y_n | x_n,  \x_{<i})$. This gives us $N$ conditionally-independent distributions each for a different $x_n$. We can choose any statistic of these distributions to select which one to sample from. For example, we could choose the distribution with the highest entropy, or the distribution with the lowest entropy, or the distribution with the highest mean, or the distribution with the lowest mean, etc. We can then sample from the chosen distribution to get the next $y_n$. Because we sample, we in principle do not change the distribution of results -- however in practice, we may change the distribution of results because of the way we choose the statistic. I will discuss this in \Cref{s:a-o-discussion}.
 
 
 \subsection{Training task and input formats}
@@ -96,7 +103,27 @@ As a result of being invariant to permutations, and working with non-contiguous 
     \item A convolutional or dense neural network applied to the input including the sequence dims (ie. not ``pointwise'') is neither invariant to the order, nor can be applied to sequences with gaps.
 \end{itemize}
 
-In the next section I describe some tasks we might want to perform with these unique abilities of a transformer.
+\subsubsection{Arbitrary order auto-regressive pre-training using input triples}
+\label{sss:pretraining-triples}
+
+This is a variant on auto-regressive sequence modeling that I developed for this project. Let us recall causal/autoregressive pretraining from the previous chapter. (See \Cref{fig:pretraining-causal}) Recall that these predict the next input from the previous input, conditioned on the rest of the sequence via their attention layers.
+
+We can represent the input as
+$$
+   \x = (y_{<i}, x_{<i}) = ( \{ y_i, y_{i-1}, ..., y_1 \}, \{ x_i, x_{i-1}, ..., x_1 \} )
+$$
+where $i$ represents the position of a token, and $x$ represents the value of a token. When predicting the next input from the previous input, the model typically infers the next position from the previous position during the process of predicting.
+
+However, if we are to use random positions, the model is not able to infer the position to predict. We instead construct an input sequence in the following way
+$$
+   \x = (x_{<i+1}, y_{<i}, x_{<i}) = ( \{ x_{i+1}, x_{i}, ..., x_2 \}, \{ y_i, y_{i-1}, ..., y_1 \}, \{ x_i, x_{i-1}, ..., x_1 \} )
+$$.
+
+By providing the input as (target position, input position, input value] triples instead of [input position, input value] pairs (in which the target is implicit), we allow the model to predict the next input value without inferring the next position.
+
+If our sequence is presented in contiguous-forward-only ordering, $i$ is always paired with $i+1$ and we do not introduce any new information. However, since we create a sequence with an arbitrary order during training, the model learns to utilize this information.
+
+Then, at inference time we can choose $x_{i+1}$ to be any position that we want the model to predict next, by constructing the following triple $(x_{i+1}, y_i, x_i)$ and appending it to the rest of the previous tokens.
 
 
 \section{Hypothesis}
@@ -131,36 +158,13 @@ We can see examples of this in \cref{fig:mnist-task-examples}.
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.5\textwidth]{figures/examples-sequential.png}
-    \includegraphics[width=0.5\textwidth]{figures/examples-random.png}
+    \includegraphics[width=0.7\linewidth]{figures/examples-sequential.png}
+    \includegraphics[width=0.7\linewidth]{figures/examples-random.png}
     \caption[Examples of the two MNIST training tasks]{Examples of the two tasks, showing input sequences with progressively more pixels filled in. (Pink means the pixel was not provided). Top: Pixels are presented in a contiguous forward-only order. Bottom: Pixels are presented in a non-contiguous, random order.}
     \label{fig:mnist-task-examples}
 \end{figure}
 
-In addition to the above encoding I experiment with two slightly different pre-training tasks for the ``random-order'' task. In the first, I use the ``Masked Sequence Modeling'' task, where I mask out a random subset of the pixels in the image, and the model is trained to predict the masked out pixels. In the second, I use a ``Autoregressive Sequence Prediction'' task, except with additional positional information, where the model is given both the positional information of the current pixel and the next pixel when predicting the value of the next pixel.
-
-\subsubsection{Arbitrary order decoder-only transformer using input triples}
-\label{sss:decoder-only-triples}
-
-This is a variant on auto-regressive sequence modeling that I developed for this project. Let us recall causal/autoregressive pretraining from the previous chapter. (See \Cref{fig:pretraining-causal}) Recall that these predict the next input from the previous input, conditioned on the rest of the sequence via their attention layers.
-
-We can represent the input as
-$$
-   \x = (y_{<i}, x_{<i}) = ( \{ y_i, y_{i-1}, ..., y_1 \}, \{ x_i, x_{i-1}, ..., x_1 \} )
-$$
-where $i$ represents the position of a token, and $x$ represents the value of a token. When predicting the next input from the previous input, the model typically infers the next position from the previous position during the process of predicting.
-
-However, if we are to use random positions, the model is not able to infer the position to predict. We instead construct an input sequence in the following way
-$$
-   \x = (x_{<i+1}, y_{<i}, x_{<i}) = ( \{ x_{i+1}, x_{i}, ..., x_2 \}, \{ y_i, y_{i-1}, ..., y_1 \}, \{ x_i, x_{i-1}, ..., x_1 \} )
-$$.
-
-By providing the input as (target position, input position, input value] triples instead of [input position, input value] pairs (in which the target is implicit), we allow the model to predict the next input value without inferring the next position.
-
-If our sequence is presented in contiguous-forward-only ordering, $i$ is always paired with $i+1$ and we do not introduce any new information. However, since we create a sequence with an arbitrary order during training, the model learns to utilize this information.
-
-Then, at inference time we can choose $x_{i+1}$ to be any position that we want the model to predict next, by constructing the following triple $(x_{i+1}, y_i, x_i)$ and appending it to the rest of the previous tokens.
-
+In addition to the above encoding I experiment with three different pre-training task formats for the data. The first is forward-only auto-regressive pretraining as in the previous chapter (\Cref{fig:pretraining-causal}). The second is a ``Masked Sequence Modeling'' task, where I mask out a random subset of the pixels in the image, and the model is trained to predict the masked out pixels, and the final one is the ``Arbitrary-order auto-regressive pretraining`` variant I describe above in \Cref{sss:pretraining-triples}.
 
 \subsection{Models}
 
