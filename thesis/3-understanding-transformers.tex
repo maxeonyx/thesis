@@ -19,8 +19,7 @@ Attention has a number of useful properties which come from its mathematical con
 
 \subsection{Mathematical Definition}
 
-An attention operation is of the following form, using short summation notation, where $\sigma$ is the \textit{softmax} operator (see \ref{eqn:softmax}), and $A$ is the pre-softmax attention logits.
-\vspace{-10pt}
+An attention operation is of the following form, using short summation notation, where $\sigma$ is the \textit{softmax} operator (see \ref{eqn:softmax})
 \begin{gather*}
     \nfdef{f_{\text{attn}}}{\R^{M×D}×\R^{N×D}×\R^{N×V}}{\R^{M×V}}
 \end{gather*}
@@ -35,7 +34,14 @@ An attention operation is of the following form, using short summation notation,
     Q ∈ \R^{M×D}, K ∈ \R^{N×D}, V ∈ \R^{N×V} \\
     M, N, D, V ∈ \N
 \end{gather*}\vspace{-10pt}\\
-The innermost multiplication of $Q$ and $K$ is simply the inner product (dot product) between vectors $Q_m$ and $K_n$. This however is not inherent. Instead of the inner product, we can substitute any kernel function. (Although this is not usually done because the inner product is the most natural choice, and is efficient to compute)
+The innermost multiplication of $Q$ and $K$ in the above equation is simply the expanded form of inner product (dot product) between vectors $Q_m$ and $K_n$. This operation however is not inherent. Instead of the inner product, we can substitute any kernel function $k(q, k)$
+\begin{equation}
+\label{eqn:attn}
+\begin{split}
+    f_{\text{attn}}(Q, K, V)_{mv} ≝ \sum_n \left[\sigma(k(Q_m, K_n)) _{mn} V_{nv} \right]
+\end{split}
+\end{equation}%
+However, substituting a different kernel function is not usually done because the inner product is the most natural choice, and is efficient to compute.
 
 For clarity, the expanded form of the attention computation, resulting in the unnormalized attention weights $A$, for an arbitrary kernel function $k$, is as follows:
 \begin{align*}
@@ -61,7 +67,7 @@ A_{mn} = k(Q_m, K_n)
 &= Q K^T .
 \end{align*}
 
-We can see that the attention weights $A$ have shape $M×N$. This is the primary drawback of the attention operation. $M$ and $N$ are typically both large, and the takes $O(MN)$ space and time to compute. Despite this drawback, the attention operation has proven extremely useful in a variety of tasks. There are many different ways to address this but I will not discuss them.
+We can see that the attention weights $A$ have shape $M×N$. This is the primary drawback of the attention operation. $M$ and $N$ are typically both large, and the attention weights take $O(MND)$ time to compute (assuming dot product attention), and $O(MN)$ space to store. Despite this drawback, the attention operation has proven extremely useful in a variety of tasks. There are many different ways to address this but I will not discuss them.
 
 \subsection{Permutation-invariance with respect to $K$ and $V$}
 
@@ -77,10 +83,13 @@ This property is due to the construction of the attention operator. We can see t
 
 \subsection{Permutation-equivariance with respect to $Q$}
 
-Relatedly, attention is also permutation-\textit{equivariant} with respect to the query inputs. Equivariance means that the value of the output $O_m$ is dependent on the value of the query vector $Q_m$, but independent of the order of all other query vectors $Q_{m'}$, $m' ≠ m$.
+Relatedly, attention is also permutation-\textit{equivariant} with respect to the query inputs. Equivariance means that the value of the output $O_m$ is dependent on the value of the query vector $Q_m$, but independent of the order of all \textit{other} query vectors $Q_{m'}$, $m' ≠ m$.
+
+For example, let us imagine we have a sequence of four key \& value inputs $[K_1, K_2, K_3, K_4]$, and $[V_1, V_2, V_3, V_4]$, and a sequence of three query inputs $[Q_A, Q_B, Q_C]$ which when passed into an attention operation, produce three outputs $[O_A, O_B, O_C]$. First, due to the first property (invariance in $K$ and $V$), if we swap for example the inputs $K_1$ \& $V_1$ with $K_3$ and $V_3$, the output sequence will remain $[O_A, O_B, O_C]$. Second, if we swap the inputs $Q_A$ and $Q_C$, the second property (equivariance in $Q$) means that the output sequence is correspondingly transformed to $[O_C, O_B, O_A]$.
+
 This property is due to the fact that softmax operation is equivariant to the order of its inputs, which we can see from the construction in \Cref{eqn:softmax}.
 
-This property of attention stands in contrast to the two main other methods used to process sequence data, convolution (CNNs) and recurrence (RNNs). Neither of these operations are invariant (or equivariant) with respect to their inputs.
+This property of attention stands in contrast to the two main other methods used to process sequence data, convolution (CNNs) and recurrence (RNNs). Neither of these operations are permutation invariant or equivariant with respect to their inputs.
 
 \subsection{Dynamic length inputs}
 
@@ -94,11 +103,11 @@ The fact that attention can be computed in parallel is a very useful property, s
 
 So attention is a operation with a number of useful properties. Now we will see how it is used to build a variety of models capable of solving a variety of tasks with sequence data.
 
-\section{Transformer models}
+\section{Basic components of transformers.}
 
 An attention operation model does not itself make a neural network. It is simply a building block that can be used to construct a neural network.
 
-A transformer model puts attention operations together with MLP blocks similarly to in residual networks (ResNets). Without MLP blocks as non-linearities, the outputs of an attention operation are linear functions of the inputs, since the softmax is only used to compute coefficients when summing the values. This means that the outputs of an attention operation are linear combinations of the inputs. This is useful as a building block but we would like to be able to learn non-linear functions of the inputs. MLP blocks are used to introduce non-linearities into the model.
+A transformer model puts attention operations together with MLP blocks similarly to in residual networks (ResNets). Without MLP blocks as non-linearities, the outputs of an attention operation are linear functions of the inputs, since the softmax is only used to compute coefficients when summing the values. Because the weights are convex (sum to 1), the output vectors of an attention operation are convex combinations of the value vectors, and will always sit within the convex hull of the value vectors. (However, note that the outputs are non-linear functions of the inputs, due to the fact that the weights are also computed from the inputs). Attention-only we would like to be able to apply non-linear transformations to the value vectors. MLP blocks are used to introduce additional non-linearities into the model.
 
 In \Cref{fig:residual-block} we can see a diagram of a typical residual block in a transformer, combining an attention operation, a feed-forward layer, and a residual connection as in a ResNet.
 
@@ -108,7 +117,7 @@ In \Cref{fig:residual-block} we can see a diagram of a typical residual block in
     \captionsetup{parskip=7pt}
     \caption[Typical residual block in transformer]{Typical residual block in transformer (with the $D$ dimension expanded, rather than the $N$ or $M$ dimension as usual.).
 
-    In the MLP block, the sequence of residual latents are independently projected into a higher-dimensional space, where a non-linearity is applied, and then projected back down to the original dimension. The output of the MLP block is then projected into $Q$, $K$, and $V$ spaces, and the attention operation is applied. Finally, the results are added to the residual stream.}
+    In the MLP block, the sequence of residual latents are independently projected into a higher-dimensional space, where a non-linearity is applied, and then projected back down to the original dimensionality. The output of the MLP block is then projected into $Q$, $K$, and $V$ spaces, and the attention operation is applied. Finally, the results are added to the residual stream.}
     \label{fig:residual-block}
 \end{figure}
 
@@ -121,9 +130,11 @@ K &= W_{K} \X + \vb_{K} \\
 V &= W_{V} \X + \vb_{V}
 \end{aligned}
 \end{align}
+
+
 If we derive all three matrices from the same input $\X$, then $M = N$ and the attention operation is called a \textit{self-attention} operation. A diagram of this is shown in \Cref{fig:self-attn}. The blue shaded areas show the receptive field used when computing each output vector $x'_i$.
 
-When Q and K are derived from separate sequences of feature/embedding vectors, then in general $M ≠ N$ and this is called \textit{cross-attention}. A diagram of this is shown in \Cref{fig:cross-attention}.
+When Q and K are derived from separate sequences of feature/embedding vectors, then in general $M ≠ N$ and this is called \textit{cross-attention}. A diagram of this is shown in \Cref{fig:cross-attn}.
 
 \begin{figure}
     \centering
@@ -185,7 +196,7 @@ Some examples of where we see this architecture in use are:
 \begin{figure}
     \centering
     \includegraphics[width=1.2\linewidth]{figures/transformers.pdf}
-    \caption[Transformer model]{Left: Encoder-only model. Right: Deocder-only model. Residual connections have been ommitted for brevity.}
+    \caption[Transformer model]{Left: Encoder-only model. Right: Decoder-only model. Residual connections have been ommitted for brevity.}
     \label{fig:transformers}
 \end{figure}
 
@@ -207,7 +218,7 @@ In \cite{attention-is-all-you-need}, they train an encoder-decoder architecture 
     \centering
     \includegraphics[]{figures/attn-5-unified.pdf}
     \captionsetup{parskip=7pt}
-    \caption[Unified attention]{Unified self- and cross-attention, as in \cite{unilm}.
+    \caption[Unified attention]{Unified self- and cross-attention, from \cite{unilm}.
 
     Bi- and uni-directional attention can be performed with the same attention layers with careful masking, allowing the same model to be trained on any mixture of pre-training tasks.
 
@@ -217,6 +228,8 @@ In \cite{attention-is-all-you-need}, they train an encoder-decoder architecture 
 
 As we see in \ref{fig:unified-attn}, there are actually two ways we might include information from the encoded sequence into the decoded sequence. In the first, which is used in most encoder/decoder models including the original, all the layers of the encoder are computed fully, and the final encoded sequence is provided to the decoder at all layers via cross-attention. In the second, the encoder is separated from the decoder only by correct application of masking in the attention layers, and is only computed up to the layer which is being decoded at.
 
+This second scheme is called ``unified'' attention, eg. \cite{unilm,t5}.
+
 \begin{figure}
     \includegraphics[width=\linewidth]{figures/attention_masks.pdf}
     \caption[Attention Masks]{Masking in unified attention layers \cite{unilm,t5}. The bi- and uni-directional attention can be performed within a single attention layer.}
@@ -225,47 +238,9 @@ As we see in \ref{fig:unified-attn}, there are actually two ways we might includ
 
 The different layouts that can be used are shown in \Cref{fig:unified-masking}.
 
-The first method is more efficient because the attention matrices of the encoder and the decoder are split, using $O(N^2 +M^2)$ memory rather than $O(N^2M^2)$. However, the second method is conceptually simpler and is better when the trained model will be used for fine-tuning/transfer learning \cite{t5}., because it uses the  decoder to attend to the encoded sequence at any layer, and not just the final layer. This is useful for tasks such as image captioning, where the decoder may want to attend to the encoded image at multiple layers, and not just the final layer.
+The first method is more efficient because the attention matrices of the encoder and the decoder are split, using $O(N^2 +M^2)$ memory rather than $O(N^2M^2)$. However, the second method is conceptually simpler and is better when the trained model will be used for fine-tuning/transfer learning \cite{t5}., because it uses the decoder to attend to the encoded sequence at any layer, and not just the final layer. This is useful for tasks such as image captioning, where the decoder may want to attend to the encoded image at multiple layers, and not just the final layer.
 
-Tranformer models trained on a mix of pre-training tasks using this architecture are known as T5 models (\textbf{T}ext-\textbf{T}o-\textbf{T}ext \textbf{T}ransfer \textbf{T}ransformers) \cite{t5}.
-
-
-\section{Pretraining tasks}
-\label{s:pretraining}
-
-A \textit{pre-training task} is a self-supervised task used to train a transformer. There are two main pre-training methods for transformer models which I have already mentioned: \textit{Masked Sequence Modeling} and \textit{Auto-regressive Sequence Modeling} (ASM).
-
-In masked sequence modeling (MSM), the model is trained to reconstruct the original sequence, but with some of the inputs masked out. An example of this for a language model is shown in \Cref{fig:xlm}.
-
-\begin{figure}
-    \centering
-    \includegraphics[width=\linewidth]{figures/XLM.pdf}
-    % \vspace{-0.4cm}
-    \caption[Masked Language Model Pretraining]{Cross-lingual masked language model pretraining, from \cite{cross-lingual-mlm}.
-
-    Top: The standard MLM pretraining task. A sequence of text tokens are given as input, some are masked and the model is trained to predict the masked tokens.
-
-    Bottom: The cross-lingual MLM pretraining task. A sequence of text tokens from two different languages are given as input, some tokens are masked and the model is trained to predict the masked tokens. The model is trained on a mixture of monolingual and cross-lingual examples.}
-    \label{fig:xlm}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=\linewidth]{figures/pretraining-msm.pdf}
-    \caption[Masked Sequence Modeling Pretraining]{Masked sequence modeling pretraining task. The model is trained to reconstruct masked-out elements of the original sequence.}
-    \label{fig:pretraining-msm}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=\linewidth]{figures/pretraining-causal.pdf}
-    \caption[Autoregressive Sequence Modeling Pretraining]{Autoregressive pretraining task. The model is trained to predict the next element in the sequence.}
-    \label{fig:pretraining-causal}
-\end{figure}
-
-The inputs to the tranformer models are typically sequences of discrete tokens, which each have a corresponding entry in a learned codebook of latent vectors. Masking out an input in this context means adding an additional token and learned embedding``<mask>'' to the codebook, which is used to represent the masked out inputs. As we can see in the figure, the masked positions still have embeddings of the positional information, which is necessary because a transformer model has no implicit order information available to it.
-
-The second main pre-training task is auto-regressive sequence modeling, where the model is trained to predict the next token in a sequence, given the previous tokens. For this pre-training task the target outputs are present in the input sequence, but one token ahead. The model must therefore be a uni-directional / causally-masked model (\Cref{fig:transformers}) to prevent information flow from the future to the past and prevent the model learning degenerate behaviour, as in \Cref{fig:self-attn-causal}.
+Transformer models trained on a mix of pre-training tasks using unified attention architecture are known as T5 models (\textbf{T}ext-\textbf{T}o-\textbf{T}ext \textbf{T}ransfer \textbf{T}ransformers) \cite{t5}.
 
 
 
