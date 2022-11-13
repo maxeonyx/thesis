@@ -12,6 +12,7 @@ Many of the recent amazing results in deep learning have been achieved with a cl
 Firstly, I will discuss the operation that under-pins transformers -- attention.
 
 \section{The Attention Operation}
+\label{S:attn}
 
 Attention is a biologically-inspired mechanism that allows a model to receive inputs from distant parts of the input data, weighted by the \textit{attention weight} given to those inputs, which is typically computed from the data itself. This has proven extremely useful for diverse tasks including machine translation, image generation, and more. In this section I will describe the attention operator.
 
@@ -155,7 +156,28 @@ Since the introduction of transformers it is common to use \textit{multi-head} a
 
 The defining feature of a transformer model is that it has ``attention'' layers. However, there is not just one way to assemble these layers, and there is not just one way to train these models.
 
-We can broadly split the transformer architecture variants into four categories: \textit{encoder-only} models, \textit{decoder-only} models, unified attention models, and \textit{encoder-decoder} models.
+The next sections will introduce \textit{masking} and \textit{pretraining tasks}, which are the primary ways that transformer architecture variants differ.
+
+\section{Masking and Pretraining}
+\label{s:masking}
+
+When transformer models are trained, they are often trained on large datasets of un-labeled data, which is called self-supervised learning or pre-training. The resulting models are then often further trained on smaller labeled datasets, which is called transfer-learning or fine-tuning.
+
+In order to train a model on large unlabeled data, it needs to be formatted into a pre-training task. The two main types of pre-training task are \textit{masked sequence modeling} and \textit{auto-regressive pretraining}.
+
+\subsection{Masked sequence modeling}
+\label{ss:msm}
+
+
+\subsection{Causal Masking \& Auto-regressive pretraining}
+\label{ss:causal}
+
+
+\subsection{Unified pretraining}
+\label{ss:unified}
+
+
+\section{Transformer Architectures}
 
 \subsection{Masked Sequence Modeling: Encoder-only models}
 \label{ss:msm}
@@ -243,9 +265,47 @@ The first method is more efficient because the attention matrices of the encoder
 Transformer models trained on a mix of pre-training tasks using unified attention architecture are known as T5 models (\textbf{T}ext-\textbf{T}o-\textbf{T}ext \textbf{T}ransfer \textbf{T}ransformers) \cite{t5}.
 
 
+\section{Pretraining tasks}
+\label{s:pretraining}
+
+A \textit{pre-training task} is a self-supervised task used to train a transformer. There are two main pre-training methods for transformer models which I have already mentioned: \textit{Masked Sequence Modeling} and \textit{Auto-regressive Sequence Modeling} (ASM).
+
+In masked sequence modeling (MSM), the model is trained to reconstruct the original sequence, but with some of the inputs masked out. An example of this for a language model is shown in \Cref{fig:xlm}.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{figures/XLM.pdf}
+    % \vspace{-0.4cm}
+    \caption[Masked Language Model Pretraining]{Cross-lingual masked language model pretraining, from \cite{cross-lingual-mlm}.
+
+    Top: The standard MLM pretraining task. A sequence of text tokens are given as input, some are masked and the model is trained to predict the masked tokens.
+
+    Bottom: The cross-lingual MLM pretraining task. A sequence of text tokens from two different languages are given as input, some tokens are masked and the model is trained to predict the masked tokens. The model is trained on a mixture of monolingual and cross-lingual examples.}
+    \label{fig:xlm}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics{figures/pretraining-msm.pdf}
+    \caption[Masked Sequence Modeling Pretraining]{Masked sequence modeling pretraining task. The model is trained to reconstruct masked-out elements of the original sequence.}
+    \label{fig:pretraining-msm}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics{figures/pretraining-causal.pdf}
+    \caption[Autoregressive Sequence Modeling Pretraining]{Autoregressive pretraining task. The model is trained to predict the next element in the sequence.}
+    \label{fig:pretraining-causal}
+\end{figure}
+
+The inputs to the tranformer models are typically sequences of discrete tokens, which each have a corresponding entry in a learned codebook of latent vectors. Masking out an input in this context means adding an additional token and learned embedding``<mask>'' to the codebook, which is used to represent the masked out inputs. As we can see in the figure, the masked positions still have embeddings of the positional information, which is necessary because a transformer model has no implicit order information available to it.
+
+The second main pre-training task is auto-regressive sequence modeling, where the model is trained to predict the next token in a sequence, given the previous tokens. For this pre-training task the target outputs are present in the input sequence, but one token ahead. The model must therefore be a uni-directional / causally-masked model (\Cref{fig:transformers}) to prevent information flow from the future to the past and prevent the model learning degenerate behaviour, as in \Cref{fig:self-attn-causal}.
+
+
 
 % attention
 % transformer architectures
 % pre-training types
 
-In the next chapter (\Cref{C:a-o-sampling}) I experiment with a new pre-training task, which is a variation on auto-regressive sequence modeling, which I call \textit{arbitrary-order autoregressive pretraining}, which I will later apply to hand motion prediction.
+In the next chapter (\Cref{C:a-o-sampling}) I also experiment with a new pre-training task, which is a variation on auto-regressive sequence modeling, which I call \textit{arbitrary-order autoregressive pretraining}, which I will later apply to hand motion prediction.

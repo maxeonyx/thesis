@@ -59,8 +59,6 @@
 
 \usepackage[nameinlink]{cleveref}
 
-%\renewcommand{\baselinestretch}{1.00}
-
 \include{thesis/x-x-definitions}
 
 \begin{document}
@@ -75,13 +73,7 @@
 \author{Maxwell Clarke}
 
 \subject{Computer Science}
-\abstract{
-In this thesis I develop neural networks and apply them to the problem of hand motion modelling for film production.
-
-Firstly, I develop a novel training regime for transformers which allows auto-regressive sampling of high-dimensional data in an arbitrary order, and demonstrate this technique on pixel-by-pixel sampling of MNIST images.
-
-Secondly, I develop a predictive model for hand-motion data, via unsupervised training on a motion-capture dataset. I compare fixed-order sampling to best order I found using the above technique.
-}
+\input{thesis/0-1-abstract.tex}
 % Books don't normally have abstracts, and this is a bit of a hack
 
 % Uncomment the appropriate degree
@@ -100,7 +92,7 @@ Secondly, I develop a predictive model for hand-motion data, via unsupervised tr
 
 \maketitle
 
-% \include{thesis/0-1-acknowledge}
+\include{thesis/0-2-acknowledge}
 
 \tableofcontents
 

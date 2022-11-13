@@ -1,59 +1,65 @@
+\RequirePackage{luatex85}
+\RequirePackage{standalone}
+\documentclass{standalone}
 
-\pgfdeclarelayer{bg}
-\pgfsetlayers{bg,main}
+\input{figure-preamble.tex}
+
+\begin{document}
 
 \begin{tikzpicture}
-    \tikzstyle{every node}=[node distance=3.5cm,minimum height=0.8cm]
+    \usetikzlibrary{graphs, graphdrawing}
+    \usegdlibrary{layered}
+    \pgfdeclarelayer{bg}
+    \pgfsetlayers{bg,main}
+    \tikzstyle{every node}=[draw,fill=white,text width=5cm]
 
-    % dataset type
-    \node (datasettype) {Dataset Type};
-    \node[draw, below of=datasettype] (seqpred) {Sequence Prediction};
-    \draw (datasettype) -- node[fill=white] {Un-labeled} (seqpred);
+    \graph [layered layout] {
 
-    % input shape
-    \node[right of=datasettype] (seqmodel) {Model Architecture};
+        (categorical) / { \textbf{\Cref{ss:cat-dist}}: Categorical distribution/classification. };
 
-    % loss
-    \node[right of=seqmodel] (loss) {Loss Functions};
+        (attn) / { \textbf{\Cref{S:attn}}: The attention operation. };
 
-    % angles
-    \node[draw,fill=black,minimum height=0.2cm,circle,below of=loss,xshift=1.5cm] (angles) {};
-    \draw (loss) -- node[fill=white] {Angles} (angles);
+        (causal) / { \textbf{\Cref{ss:cau}}: Autoregressive pretraining. };
 
-    \node[draw,fill=white,below of=angles,node distance=2.5cm, xshift=-2cm] (amse) {Squared Angular Error};
-    \draw (angles) -- (amse.north);
+        (a-autoreg /) { \textbf{\Cref{sss:pretraining-triples}}: Arbitrary-order autoregressive pretraining. };
 
-    \node[draw,fill=white,below of=angles,node distance=2.5cm, xshift=2cm] (vonmises) {Von-Mises NLL};
-    \draw (angles) -- (vonmises.north);
+        (deconly) / { \textbf{\Cref{ss:decoder-only}}: Decoder-only transformers. };
 
-    \node[draw,fill=white,below of=loss,node distance=4.5cm,xshift=-1.5cm] (cat)  {Categorical};
-    \draw (loss) -- node[fill=white] {Discrete} (cat.north);
+        (a-autoreg /) { \textbf{\Cref{sss:pretraining-triples}}: Arbitrary-order autoregressive pretraining. };
 
-    % transformer (here because needs to draw above a line)
-    \node[draw, below of=seqmodel] (transformer) {Transformer};
-    \draw (seqmodel) -- node[fill=white] {Sequence-Based} (transformer);
+        (amse) / { \textbf{\Cref{ss:amse}}: Mean-squared angular error loss. };
 
+        (vonmises) / { \textbf{\Cref{ss:von-mises}}: von-Mises distribution over angles. };
 
-    % chapter 4: arbitrary order sampling
-    \node[draw,fill=white,text width=5cm] (chapter4) at (0,-8cm) {\textbf{\Cref{C:a-o-sampling}}: Arbitrary order sampling on MNIST};
+        (hand) / { \textbf{\Cref{ss:hand}}: Hand pose data. };
 
-    % chapter 6.2: transformer for hand pose prediction
-    \node[draw,fill=white,text width=5cm] (chapter62) at (2.5cm,-10.5cm) {\textbf{\Cref{C:hand-model}, \Cref{S:mean-model}}: Predicting the next frame in a hand animation};
+        % chapter 4: arbitrary order sampling
+        (chapter4) / {\textbf{\Cref{C:a-o-sampling}}: Arbitrary order sampling on MNIST};
 
-    % chapter 6.3: probabilistic model for hand pose prediction
-    \node[draw,fill=white,text width=5cm] (chapter63) at (8cm,-10.5cm) {\textbf{\Cref{C:hand-model}, \Cref{S:prob-model}}: A flexible probabilistic model for hand motion prediction};
+        % chapter 6.2: transformer for hand pose prediction
+        (chapter62) / {\textbf{\Cref{C:hand-model}, \Cref{S:mean-model}}: Predicting the next frame in a hand animation};
 
-    \begin{pgfonlayer}{bg}
-        \draw ([xshift=-4pt]seqpred.south) -- ([xshift=-4pt]chapter4.north);
-        \draw ([xshift=-4pt]transformer.south) -- (chapter4.north);
-        \draw (cat.south) -- ([xshift=4pt]chapter4.north);
+        % chapter 6.3: probabilistic model for hand pose prediction
+        (chapter63) / {\textbf{\Cref{C:hand-model}, \Cref{S:prob-model}}: A flexible probabilistic model for hand motion prediction};
 
-        \draw (seqpred.south) -- ([xshift=-4pt]chapter62.north);
-        \draw (transformer.south) -- (chapter62.north);
-        \draw (amse.south) -- ([xshift=4pt]chapter62.north);
+        (categorical) -- (chapter4);
 
-        \draw ([xshift=4pt]seqpred.south) -- ([xshift=-4pt]chapter63.north);
-        \draw ([xshift=4pt]transformer.south) -- (chapter63.north);
-        \draw (vonmises.south) -- ([xshift=4pt]chapter63.north);
-    \end{pgfonlayer}
+        (attn) -- (causal) -- (a-autoreg) -- (chapter4);
+
+        (attn) -- (deconly);
+
+        (deconly) -- (chapter4);
+
+        (causal) -- (chapter62);
+        (deconly) -- (chapter62);
+        (amse) -- (chapter62);
+
+        (causal) -- (chapter63);
+        (deconly) -- (chapter63);
+        (vonmises) -- (chapter63);
+
+    };
+
 \end{tikzpicture}
+
+\end{document}

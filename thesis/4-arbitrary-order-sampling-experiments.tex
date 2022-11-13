@@ -19,59 +19,7 @@ I then use this model to compare the following sampling orders:
 
 Contrary to my hypothesis that a lowest-entropy-first sampling order would result in the best samples, I find that this biases the samples towards images with large amounts of empty background, such as images of 1s. Correspondingly, a highest-entropy-first sampling order biases the samples towards images of 8s and 9s. In the discussion, I argue this occurs because the criterion we are selecting for introduces a bias, and I characterise this bias.
 
-\section{Background}
 
-When modeling data, it is often useful to have a \textit{probabilitic} model of the data, rather than a deterministic model. This allows us to quantify uncertainty about the model outputs, sample from the model, and avoid problems with multi-modal distributions. However, when the data we are modeling is high-dimensional, probabilistic models often become computationally expensive or intractable.
-
-\subsection{Distributions over high-dimensional data}
-
-For example, let us imagine we are modeling a sequence of $N$ observations $\x_i \in \R^D$, $1 ≤ i ≤ N$ (each observation is a $D$-dimensional vector). To represent the joint distribution over this data, even with a simple gaussian distribution requires $DN + (DN)^2$ parameters ($DN$ means, plus a $DN \times DN$ covariance matrix). If $N$ is large, this is a very large number of parameters, but still manageable.
-
-A gaussian however is limited in its ability to model the data. For example, it cannot model multi-modal distributions. To model multi-modal distributions, we could use a mixture of gaussians, but this increases the number of parameters even further, to $(DN + (DN)^2)K + K$, where $K$ is the number of mixture components, making sampling and inference much more expensive.
-
-In general, the more expressive the family of distributions we use to model the data, the more parameters we need to represent the distribution and the more expensive it is to sample from the distribution.
-
-There are a few main approaches to address this problem, which I show below:
-
-\begin{itemize}
-    \item Discretization
-    \item Independence assumptions
-    \item Auto-regressive factorization
-\end{itemize}
-
-\subsubsection{Discretization}
-
-One approach to managing the intractibility of high-dimensional data is to discretize the data, and then model it with a categorical distribution. For example, we can use a clustering algorithm to learn a series of $K$ points within our $DN$-dimensional space, and then form a discrete distribution over these points. A discrete distribution over $K$ points has $K-1$ free parameters, so this approach reduces the number of parameters from $(DN)^2$ to $K-1$, and makes sampling and inference more efficient. However the discretization changes the domain of the data, which may not always be useful. Additionally, the larger the domain, the more cluster points we need to use, and we might not be able to find a good clustering of the data.
-
-\subsubsection{Independence assumptions}
-
-Independence assumptions are another way to reduce the number of parameters. For example, we could assume that the observations $\x_i$ are independent, and then model the sequence as a product of $N$ independent $D$-dimensional distributions. For a Gaussian, this means fixing parts of the co-variance matrix, and we often reduce to having a single variance parameter. A single variance parameter reduces the number of parameters from $(DN)^2$ to $DN$, but it also makes the model less expressive. For sequence data, this assumption is almost never valid along the sequence dimension, so this approach is not very useful.
-
-\subsubsection{Auto-regressive factorization}
-
-Auto-regressive factorization is a third approach to reducing the number of parameters. In this approach, we break down the joint distribution over the sequence into a product of conditional distributions, where each conditional distribution depends only on the previous observations. We then typically model all of these conditional distributions with the same model.
-
-\begin{align}
-    \label{eqn:ar-factorization}
-    \begin{aligned}
-        p(\x_1, \x_2, \ldots, \x_N) &= \prod_i^N p(\x_i | \x_1, \ldots, \x_{i-1}) \\
-        &= p(\x_1) p(\x_2 | \x_1) p(\x_3 | \x_1, \x_2) \ldots p(\x_N | \x_1, \ldots, \x_{N-1})
-    \end{aligned}
-\end{align}
-
-When we use an auto-regressive model to predict sequences, we usually choose some fixed order for this decomposition. For data with a temporal dimension, this is usually first-to-last, which is usually natural because the real process that generated the data had a causal structure in the temporal dimension.
-
-However, it is valid to perform the decomposition in any order, for example choosing a random permutation of the sequence(s):
-
-\begin{align}
-    \label{eqn:ar-factorization-random}
-    \begin{aligned}
-        J = {5, 3, 9, 1, ..., N } \\
-        p(\x_1, \x_2, \ldots, \x_N) &= p(\x_1) p(\x_2 | \x_1) p(\x_3 | \x_1, \x_2) \ldots p(\x_N | \x_1, \ldots, \x_{N-1})
-    \end{aligned}
-\end{align}
-
-In the case of data that does not have a temporal dimension, such as pixels in an image, or joint angles of a hand (within one frame), simple ordering may not always be the best. Also, some data may have very long sequences and latency requirements (such as character animation data), where it is expensive to generate the data in order, and we would instead like to generate only particular parts of the sequence.
 
 \subsection{Dynamically-ordered auto-regressive sampling}
 

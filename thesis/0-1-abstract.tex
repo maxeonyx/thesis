@@ -1,0 +1,12 @@
+\abstract{
+In this thesis I seek to understand transformer models, explore new ways of using them, and then apply them to the domain of hand motion modeling.
+
+Firstly, I provide a comprehensive introduction to transformer models, including the attention operation, masking, architecture variants, and different pre-training tasks.
+
+Secondly, I explore the use of transformer models for \textit{arbitrary-order} sampling. I show how we can construct and train a model which can be used to predict sparse sequence data, and demonstrate this on the MNIST dataset. I then compare different sampling orders, including some heuristic-based \textit{dynamic} sampling orders. I find that these dynamic sampling orders introduce a statistical bias into the samples.
+
+Thirdly, I introduce the problem domain of hand motion and hand animation, and discuss various ways to parameterize configurations of hands, and probability distributions over those configurations.
+
+Lastly, I develop a predictive model for hand-motion data, via self-supervised learning on a motion-capture dataset, and present the results of using this model to generate hand-motion sequences. I find that the learned model is able to generate realistic-looking hand motions, but is unable to be directed to generate specific motions.
+
+}
