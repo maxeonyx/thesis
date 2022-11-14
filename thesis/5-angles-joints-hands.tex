@@ -47,7 +47,7 @@ An alternative parameterization for the rotation of a 3D object or joint is to u
 
 \section{Loss Functions for learning angles}
 
-In \Cref{C:background} I introduced some loss functions such as the Mean Squared Error (MSE), which predicts the posterior expectation $\mathbb{E}(y | x)$. In this section I will discuss some other loss functions, that are commonly used for learning data which sits on .
+In \Cref{C:background} I introduced some loss functions such as the Mean Squared Error (MSE), which predicts the posterior expectation $\mathbb{E}(y | x)$. In this section I will discuss some training objectives that are used for learning data which sits on the unit circle $^1$.
 
 A variant of this is the \textit{angular} mean-squared-error, which I will use later on in \Cref{C:hand-model}.
 \newcommand{\amse}{L_{\theta\text{-MSE}}}
@@ -61,3 +61,7 @@ A variant of this is the \textit{angular} mean-squared-error, which I will use l
 Here $y$ and $\hat{y}$ are vectors of angles, and the error is defined in terms of the squared arc length between their corresponding components. This loss function is equivalent to maximising the likelihood of a von Mises distribution, the derivation for which can be found in \Cref{C:angles-joints-hands}. This is useful when we want to model angles, for example when we want to predict the orientation of a hand, which we will do in \Cref{C:hand-model}.
 
 \TODO{ Derivation of $\theta$-MSE minimizing von-mises distribution }
+
+
+\subsection{von-Mises distribution}
+\label{ss:von-mises}

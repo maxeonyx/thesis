@@ -1,65 +1,33 @@
-\RequirePackage{luatex85}
-\RequirePackage{standalone}
-\documentclass{standalone}
-
-\input{figure-preamble.tex}
-
-\begin{document}
-
-\begin{tikzpicture}
-    \usetikzlibrary{graphs, graphdrawing}
-    \usegdlibrary{layered}
+\resizebox{\linewidth}{!}{\begin{tikzpicture}
     \pgfdeclarelayer{bg}
     \pgfsetlayers{bg,main}
-    \tikzstyle{every node}=[draw,fill=white,text width=5cm]
-
-    \graph [layered layout] {
-
-        (categorical) / { \textbf{\Cref{ss:cat-dist}}: Categorical distribution/classification. };
-
-        (attn) / { \textbf{\Cref{S:attn}}: The attention operation. };
-
-        (causal) / { \textbf{\Cref{ss:cau}}: Autoregressive pretraining. };
-
-        (a-autoreg /) { \textbf{\Cref{sss:pretraining-triples}}: Arbitrary-order autoregressive pretraining. };
-
-        (deconly) / { \textbf{\Cref{ss:decoder-only}}: Decoder-only transformers. };
-
-        (a-autoreg /) { \textbf{\Cref{sss:pretraining-triples}}: Arbitrary-order autoregressive pretraining. };
-
-        (amse) / { \textbf{\Cref{ss:amse}}: Mean-squared angular error loss. };
-
-        (vonmises) / { \textbf{\Cref{ss:von-mises}}: von-Mises distribution over angles. };
-
-        (hand) / { \textbf{\Cref{ss:hand}}: Hand pose data. };
-
-        % chapter 4: arbitrary order sampling
-        (chapter4) / {\textbf{\Cref{C:a-o-sampling}}: Arbitrary order sampling on MNIST};
-
-        % chapter 6.2: transformer for hand pose prediction
-        (chapter62) / {\textbf{\Cref{C:hand-model}, \Cref{S:mean-model}}: Predicting the next frame in a hand animation};
-
-        % chapter 6.3: probabilistic model for hand pose prediction
-        (chapter63) / {\textbf{\Cref{C:hand-model}, \Cref{S:prob-model}}: A flexible probabilistic model for hand motion prediction};
-
-        (categorical) -- (chapter4);
-
-        (attn) -- (causal) -- (a-autoreg) -- (chapter4);
-
-        (attn) -- (deconly);
-
-        (deconly) -- (chapter4);
-
-        (causal) -- (chapter62);
-        (deconly) -- (chapter62);
-        (amse) -- (chapter62);
-
-        (causal) -- (chapter63);
-        (deconly) -- (chapter63);
-        (vonmises) -- (chapter63);
-
-    };
-
-\end{tikzpicture}
-
-\end{document}
+    \tikzstyle{every node}=[draw,fill=white, text width=4cm,anchor=west, node distance=5cm]
+    
+    \node (deconly) at (2.5cm, 0) { \textbf{\Cref{ss:decoder-only}} \\ Decoder-only \\ transformers. };
+    \node[right of=deconly] (autoregpre) { \textbf{\Cref{ss:autoregpre}} \\ Autoregressive pretraining. };
+    
+    \node (categorical) at (0, -2.5cm) { \textbf{\Cref{ss:cat-dist}} \\ Categorical distribution/classification. };
+    \node[right of=categorical] (aoautoregpre) { \textbf{\Cref{sss:pretraining-triples}} \\ Arbitrary-order \\ autoregressive \\ pretraining. };
+    \node[right of=aoautoregpre] (amse) { \textbf{\Cref{ss:amse}} \\ Mean squared \\ angular error loss. };
+    \node[right of=amse, node distance=6cm] (vonmises) { \textbf{\Cref{ss:von-mises}} \\ von-Mises distribution over angles. };
+    
+    \node[below of=categorical,node distance=3.5cm,xshift=2.5cm] (chapter4) {\textbf{\Cref{C:a-o-sampling}} \\ Arbitrary order sampling on MNIST};
+    \node[below of=amse,node distance=3.5cm,text width=5cm] (chapter62) {\textbf{\Cref{C:hand-model}, \Cref{S:mean-model}} \\ A deterministic model for hand motion modeling};
+    \node[below of=vonmises,node distance=3.5cm,text width=5cm] (chapter63) {\textbf{\Cref{C:hand-model}, \Cref{S:prob-model}} \\ A probabilistic model for hand motion modeling};
+    
+    \begin{pgfonlayer}{bg}
+        \draw[->] ([xshift=-4pt]autoregpre.south) to (aoautoregpre);
+        \draw[->] (autoregpre.south) to (chapter62.north);
+        \draw[->,bend left=10] ([xshift=3pt]autoregpre.south) to (chapter63.north);
+        
+        \draw[->] (aoautoregpre.south) to ([xshift=8pt]chapter4.north);
+        
+        \draw[->] (deconly.south) to (chapter4.north);
+        \draw[->, bend left=15] ([xshift=5pt]deconly.south) to ([xshift=-8pt]chapter62.north);
+        \draw[->, bend left=12] ([xshift=10pt]deconly.south) to ([xshift=-10pt]chapter63.north);
+        
+        \draw[->] (categorical) to ([xshift=-8pt]chapter4.north);
+        \draw[->] (amse) to ([xshift=8pt]chapter62.north);
+        \draw[->] (vonmises) to ([xshift=8pt]chapter63.north);
+    \end{pgfonlayer}
+\end{tikzpicture}}
