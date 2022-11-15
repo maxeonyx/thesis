@@ -1,58 +1,40 @@
 \chapter{Introduction}
 \label{C:intro}
 
-\begin{figure}[t]
-\centering
-\begin{tikzpicture}
-    \tikzstyle{every node}=[node distance=5cm]
-    \node (tn) {Transformer Networks};
-    \node (pm) [below of=tn] {Probabilistic Models};
-    \node (cg) [right of=tn] {Computer Graphics};
-    \node (an) [below of=cg] {Hand Animation};
+Transformer models are quickly taking over the field of deep learning, due to their flexibility and proven usefulness. Code completion, image classification, generative art, and many other tasks are being sucessfully tackled with transformer models.
 
-    \draw[->,bend left] (tn) to (pm);
-    \draw[->,bend left] (pm) to (tn);
-    \draw[->,bend left] (cg) to (an);
-    \draw[->,bend left] (pm) to (an);
-    \draw[->,bend left] (tn) to (an);
-\end{tikzpicture}
-\caption[The relationship between the different fields in this thesis]{How learnings and experiments from different fields contribute to each other in this thesis.}
-\end{figure}
-
-This thesis introduces concepts and experiments at the intersection of two areas: Deep Learning and Computer Graphics. There are three main areas of focus: Comprehensively introducing a class of neural network models called \textit{transformer} networks; an experiment comparing different sampling orders when predicting data using\textit{auto-regressive} transformer models; and the developement of an application of auto-regressive transformer models for \textit{hand pose modeling}.
+This thesis provides an introduction to transformer models, presents experiments with new ways of sampling data with them, and then applies them to the domain of hand motion modeling.
 
 \section{Contributions}
 
 Although much of the work done is summarizing others' research and presenting learnings, there are two main novel contributions:
 \begin{enumerate}
-    \item I present experiments with \textit{dynamically-ordered} auto-regressive sampling, utilising the \textit{permutation-invariance} property of the attention operation in transformer models.
-    \item I present a proof-of-concept transformer-based generative model for hand motion prediction, which can be used to predict hand motion at arbitrary target frames, and to predict the joints of a hand in any order within that frame.
+    \item \Cref{C:a-o-sampling} presents experiments with \textit{dynamically-ordered} auto-regressive sampling, utilising the permutation-invariance property of the attention operation in transformer models. The comparison of different dynamic sampling orders is to my knowledge the first of its kind.
+    \item \Cref{C:hand-model} presents proof-of-concept transformer-based generative models for hand motion prediction, which can be used to predict sequences of hand motion conditional on arbitrary target frames. This is a novel application of auto-regressive transformer models, and to my knowledge is the first time that a transformer model has been used on this particular problem of hand joint prediction.
 \end{enumerate}
-These contributions involved training neural networks (see \Cref{fig:context}), in particular transformers, on two datasets - MNIST, and a motion capture dataset of hand motion. The results of these experiments are presented in \Cref{C:a-o-sampling} and \Cref{C:hand-model} respectively.
+These contributions involved training neural networks (see \Cref{fig:context}), in particular transformers, on two datasets - MNIST, and the ManipNet motion capture dataset \cite{manipnet}. The results of these experiments are presented in \Cref{C:a-o-sampling} and \Cref{C:hand-model} respectively.
 
 \begin{figure}
     \centering
     \input{figures/context.tex}
     \vspace{1cm}
     \captionsetup{parskip=7pt}
-    \caption[Where my work sits.]{The later work in this thesis focuses on learning unlabeled sequence data with transformers, in two different domains.
+    \caption[Thesis overview]{How the various concepts in this work are connected to the experiments.
 
     \Cref{C:a-o-sampling} discusses experiments with different sampling orders for an auto-regressive model trained on the MNIST dataset.
 
-    \Cref{C:hand-model} discusses the development of a model for hand motion modeling using the ManipNet hand motion dataset. \Cref{S:mean-model} focuses on a deterministic model, while \Cref{S:prob-model} focuses on a probabilistic model.}
+    \Cref{C:hand-model} discusses the development of a model for hand motion modeling using the ManipNet \cite{manipnet} hand motion dataset. \Cref{S:mean-model} focuses on a deterministic model, while \Cref{S:prob-model} focuses on a probabilistic model.}
     \label{fig:context}
 \end{figure}
 
-\clearpage
-
 \section{Structure}
 
-The structure of the remainder of this thesis is as follows:
+The structure of the remainder of the thesis is as follows:
 
 \begin{enumerate}
-    \item \Cref{C:background} \nameCref{C:background} introduces notation and concepts for neural networks which will be used throughout the thesis.
+    \item \Cref{C:background} \nameCref{C:background} introduces notation and concepts for neural networks which will be used throughout.
 
-    \item \Cref{C:transformers} provides an introduction and literature reivew of a class of neural network models called \textit{transformers}, which are a class of models that have become very broadly used in the past few years.
+    \item \Cref{C:transformers} provides an introduction and literature review of a class of neural network models called \textit{transformers}, which are a class of models that have become very broadly used in the past few years.
 
     \item \Cref{C:a-o-sampling} presents a novel method for sampling sequence data in an arbitrary order, including a pretraining task variant, and experiments with this method with transformer models on the MNIST dataset.
 
@@ -60,5 +42,5 @@ The structure of the remainder of this thesis is as follows:
 
     \item \Cref{C:hand-model} then presents the development of a transformer model for predicting hand pose data and generating animations of hands.
 
-    \item Lastly, \Cref{C:conclusion} summarizes the thesis and discusses future work and reflections.
+    \item Lastly, \Cref{C:conclusion} summarizes the conclusions of the experiments, and discusses future work and reflections.
 \end{enumerate}

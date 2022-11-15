@@ -1,0 +1,19 @@
+\documentclass[crop,tikz]{standalone}
+
+\input{figure-preamble}
+
+\begin{document}
+
+\pgfdeclarelayer{img}
+\pgfsetlayers{img,bg,main}
+
+\begin{tikzpicture}
+    \begin{pgfonlayer}{img}
+        \node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=12cm]{loss-amse.png}};
+    \end{pgfonlayer}
+    \begin{scope}[x={(image.south east)},y={(image.north west)}]
+        \node[anchor=south] (key) at (0.5, 1) { $L_{\theta\text{-MSE}}(x, a) = (\sin x - \sin a)^2 + (\cos x - \cos a)^2$, \ \ shown with $a = 1.1$ };
+    \end{scope}
+\end{tikzpicture}
+
+\end{document}

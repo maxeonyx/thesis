@@ -1,0 +1,19 @@
+\documentclass[crop,tikz]{standalone}
+
+\input{figure-preamble}
+
+\begin{document}
+
+\pgfdeclarelayer{img}
+\pgfsetlayers{img,bg,main}
+
+\begin{tikzpicture}
+    \begin{pgfonlayer}{img}
+        \node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=12cm]{loss-arc.png}};
+    \end{pgfonlayer}
+    \begin{scope}[x={(image.south east)},y={(image.north west)}]
+        \node[anchor=south] (key) at (0.5, 1) { $L_{\text{arc}}(x, a) = \cos^{-1}(\cos(x - a))$, \ \ shown with $a = 1.1$ };
+    \end{scope}
+\end{tikzpicture}
+
+\end{document}

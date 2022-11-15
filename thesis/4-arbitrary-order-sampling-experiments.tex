@@ -1,15 +1,15 @@
 \chapter{Sampling Sequences In Any Order}
 \label{C:a-o-sampling}
 
-In this chapter I investigate learning auto-regressive transformers to generate pixels of the MNIST dataset. By changing the model architecture and training procedure, I show that we can learn to generate pixels in any order, including dynamically choosing the order of the pixels while sampling. The learned model can be used as a stochastic process on this dataset.
+The unique properties of transformer models allows great flexibility in the kind of tasks that they can be trained to perform. This chapter shows that with minor changes to the model architecture and training procedure, a transformer is able to generate data in any order, including dynamically choosing the order of the data while sampling. The resulting model is a stochastic process on the dataset.
 
 \section{Introduction}
 
 What is the best order to sample pixels in an image, to maximize the quality of the sample as a whole? Is it unimportant, in which case any order will do? Or does the optimal sampling order depend on the data itself?
 
-To answer this question, I train a transformer-based neural network model so that it can be used auto-regressively sample sequences of pixels in any order.
+To answer this question, a transformer-based neural network model is trained so that it can be used auto-regressively sample sequences of pixels in any order.
 
-I then use this model to compare the following sampling orders:
+The model is then used to compare the following sampling orders:
 \begin{itemize}
     \item Left-to-right, top-to-bottom
     \item Random
@@ -17,117 +17,201 @@ I then use this model to compare the following sampling orders:
     \item Lowest-entropy-first
 \end{itemize}
 
-Contrary to my hypothesis that a lowest-entropy-first sampling order would result in the best samples, I find that this biases the samples towards images with large amounts of empty background, such as images of 1s. Correspondingly, a highest-entropy-first sampling order biases the samples towards images of 8s and 9s. In the discussion, I argue this occurs because the criterion we are selecting for introduces a bias, and I characterise this bias.
-
-
+Contrary to my hypothesis that a lowest-entropy-first sampling order would result in the best samples, such sampled images are biased towards images with large amounts of empty background, such as images of 1s. Correspondingly, images sampled with highest-entropy-first sampling order are biased towards images of 8s and 9s. In the discussion, I hypothesize this occurs because the criterion we are selecting for introduces a bias, and I characterise this bias.
 
 \subsection{Dynamically-ordered auto-regressive sampling}
 
-If we have an auto-regressive model of the appropriate form that has been appropriately trained, we can dynamically choose the order that we sample a sequence. The form of the model must be such the the data $\x_i$ can be split into two components `position' and `content' which we will represent with $x_i$ and $y_i$ respectively.
+If we have an auto-regressive model of the appropriate form that has been appropriately trained, we can dynamically choose the order that we sample a sequence. The form of the model must be such the data $\x_i$ can be split into two components `position' and `content' which we will represent with $x_i$ and $y_i$ respectively.
 
-Given some seed sequence length $i$ we have input data $\x_{<i} = \{ (x_n, y_n) \mid n < i \}$. For each remaining position $x_n$, $n ≥ i$, we can compute the conditional distribution $p(y_n | x_n,  \x_{<i})$. This gives us $N$ conditionally-independent distributions each for a different $x_n$. We can choose any statistic of these distributions to select which one to sample from. For example, we could choose the distribution with the highest entropy, or the distribution with the lowest entropy, or the distribution with the highest mean, or the distribution with the lowest mean, etc. We can then sample from the chosen distribution to get the next $y_n$. Because we sample, we in principle do not change the distribution of results -- however in practice, we may change the distribution of results because of the way we choose the statistic. I will discuss this in \Cref{s:a-o-discussion}.
+Given some seed sequence length $i$ we have input data $\x_{<i} = \{ (x_n, y_n) \mid n < i \}$. For each remaining position $x_n$, $n ≥ i$, we can compute the conditional distribution $p(y_n \mid x_n,  \x_{<i})$. This gives us $N - i$ conditionally-independent distributions.
 
+Given that we have a number of conditionally-independent distributions $p(y_n \mid x_n,  \x_{<i})$, and we can sample from any of them, which one \textit{should} we sample from? This is the question which the experiment in this chapter tries to answer. We can choose any statistic of these distributions as a heuristic to decide the sampling order. For example, we could choose the distribution with the highest entropy, or the distribution with the lowest entropy, or the distribution with the highest mean, or the distribution with the lowest mean, etc. We can then sample from the chosen distribution to get the next $y_n$.
 
-\subsection{Training task and input formats}
-\label{ss:transformer-inputs}
-
-As we saw before in \Cref{s:pretraining} we have two main tasks for training a transformer model:
-
+For the experiments we will compare the following sampling orders:
 \begin{itemize}
-    \item \textbf{Masked Sequence Modeling}, which we use to train models with bi-directional attention - predict the masked out tokens.
-    \item \textbf{Autoregressive Sequence Prediction}, which we use to train a model that uses causal attention - predict the next token in sequence.
+    \item Fixed order (Left-to-right, top-to-bottom)
+    \item Random
+    \item Highest-entropy-first
+    \item Lowest-entropy-first
 \end{itemize}
 
-As we saw in the above section, transformers can have their input provided as (position, content) pairs, which naturally maps onto the above auto-regressive factorization. However, not all training tasks will result in a model that learns to use the position information in this way.
+Because the data are being sampled, and the auto-regressive factorization of a sequence is in principle independent of the order of the factorization, we might expect that the order has no effect -- however in practice, the distribution of results may be affected because the model is imperfect, and the sampling process may introduce statistical bias when choosing the next location to sample. This will be discussed more in \Cref{s:a-o-discussion}.
 
-More generally, the input to a transformer is some kind of $D$-dimensional embedding. When specifiying both the input and content , we first project the which is unique among the input set, such as special ``BEGIN'' or ``CLASS`` tokens.
-
-Both the attention layers and feed-forward layers are invariant to permutations of the input sequence. Additionally, there is no requirement that the input set be contiguous in the sequence dimension - there can be (potentially large) gaps, with no change to to the structure of the model (however, the model must be trained for the particular problem still).
-
-As a result of being invariant to permutations, and working with non-contiguous sequences, we can present many different kinds of sequence prediction tasks to a transformer that we could not easily present to other models.
-
-\begin{itemize}
-    \item A Recurrent Neural Network (RNN) can be given sequences with gaps (using the same position/content encoding), but is not invariant to the order of the "previous token" conditioning data, which must be incorporated first in some particular order.
-    \item A convolutional or dense neural network applied to the input including the sequence dims (ie. not ``pointwise'') is neither invariant to the order, nor can be applied to sequences with gaps.
-\end{itemize}
-
-\subsubsection{Arbitrary order auto-regressive pre-training using input triples}
+\subsection{Arbitrary order auto-regressive pre-training}
 \label{sss:pretraining-triples}
 
-This is a variant on auto-regressive sequence modeling that I developed for this project. Let us recall causal/autoregressive pretraining from the previous chapter. (See \Cref{fig:pretraining-causal}) Recall that these predict the next input from the previous input, conditioned on the rest of the sequence via their attention layers.
+Arbitrary order auto-regressive sequence modeling is a variant of auto-regressive pretraining developed specifically for this project. Let us recall causal/autoregressive pretraining from the previous chapter. (See \Cref{fig:pretraining-causal}) Recall that these predict the next input from the previous input, conditioned on the rest of the sequence via their attention layers.
 
-We can represent the input as
-$$
+The input sequence can be represented as:
+\begin{equation*}
    \x = (y_{<i}, x_{<i}) = ( \{ y_i, y_{i-1}, ..., y_1 \}, \{ x_i, x_{i-1}, ..., x_1 \} )
-$$
+\end{equation*}
 where $i$ represents the position of a token, and $x$ represents the value of a token. When predicting the next input from the previous input, the model typically infers the next position from the previous position during the process of predicting.
 
-However, if we are to use random positions, the model is not able to infer the position to predict. We instead construct an input sequence in the following way
-$$
-   \x = (x_{<i+1}, y_{<i}, x_{<i}) = ( \{ x_{i+1}, x_{i}, ..., x_2 \}, \{ y_i, y_{i-1}, ..., y_1 \}, \{ x_i, x_{i-1}, ..., x_1 \} )
-$$.
+However, if the data is not in order, then the the model is not able to infer the position to predict. We instead construct an input sequence in the following way, providing the model with the \textit{target} position information explicitly:
+\begin{equation*}
+   \x = (x_{<i+1}, y_{<i}, x_{<i}) = ( \{ x_{i+1}, x_{i}, ..., x_2 \}, \{ y_i, y_{i-1}, ..., y_1 \}, \{ x_i, x_{i-1}, ..., x_1 \} ).
+\end{equation*}
 
 By providing the input as (target position, input position, input value] triples instead of [input position, input value] pairs (in which the target is implicit), we allow the model to predict the next input value without inferring the next position.
 
-If our sequence is presented in contiguous-forward-only ordering, $i$ is always paired with $i+1$ and we do not introduce any new information. However, since we create a sequence with an arbitrary order during training, the model learns to utilize this information.
+If our sequence was presented in contiguous forward-only ordering, the target position of $x_i$ would always be the same, and so the addition of $x_{i+1}$ would not introduce any new information. However, in this pretraining task we randomly shuffle the order of the tokens, so the model learns to utilize this information.
 
-Then, at inference time we can choose $x_{i+1}$ to be any position that we want the model to predict next, by constructing the following triple $(x_{i+1}, y_i, x_i)$ and appending it to the rest of the previous tokens.
+At inference time we can choose $x_{i+1}$ to be any position that we want the model to predict next, by constructing the following triple $(x_{i+1}, y_i, x_i)$ and appending it to the rest of the previous tokens. This enables performing the experiments with dynamic sampling orders.
 
+\section{Previous work}
+\label{s:previous-work}
+
+A stochastic process is a sequence of random variables, where each random variable depends on the previous random variables. Equivalently, a stochastic process is a function drawn from a probability distribution over functions. Stochastic processes are extremely useful objects. Their most interesting use is for Bayesian Optimization (which we will not discuss here), but they are also used in many other areas, such as in the study of dynamical systems, and in the study of random walks.
+
+This section discusses some previous work relating neural networks and stochastic processes, and how it relates to the work in this chapter.
+
+There are a number of previous works that have explored the use of neural networks as stochastic processes:
+\begin{itemize}
+    \item Neural Processes \cite{neural-processes}
+    \item Attentive Neural Processes \cite{attentive-neural-processes}
+    \item Transformer Neural Processes \cite{transformer-neural-processes}
+    \item Transformers Can Do Bayesian Inference \cite{transformers-bayesian}
+\end{itemize}
+
+What these works have in common is that create some kind of learned model which fulfills the properties of a stochastic proceess. A key aspect that defines a stochastic process is that the distribution over the function space is invariant to permutations of the input sequence, and that the inputs sequence can be of any length. `Neural Processes' use a mean pooling operation to achieve this, but the subsequent works use the attention operation to achieve this.
+
+The models can be used draw samples from any point in a function space, then can be conditioned on the newly sampled points to form a new learned distribution over the same function space.
+
+The main difference between current approaches to neural stochastic processes is which family of distributions the learned model uses. In `Neural Processes' and `Attentive Neural Processes', the model learns a distribution over latent variables, samples from which are then fed into a decoder to determine a function. In other words, the model is a distribution can be used to sample a function. In `Transformer Neural Processes', and `Transformers Can Do Bayesian Inference', the model outputs the parameters for a distribution over functions directly. In other words, the model is a function which outputs distributions.
+
+The work in this chapter takes the second approach -- learning a function which outputs distributions. Because this approach gives access to closed-form distributions, it is possible to compute the entropy, probability density, and other quantities of interest. This is not possible with the other approaches, which only enable sampling from the distribution. However, the other approaches are able to learn more complex distributions.
+
+The above works \cite{transformer-neural-processes} and  \cite{transformers-bayesian} are the most similar to the work in this chapter. The model trained in this chapter is exactly a `Transformer Neural Process', except that the model in this chapter outputs discrete distributions rather than Gaussians.
+
+The work in this chapter investigates the effect of choosing a dynamic sampling order for image completion with a transformer neural process based on the entropy of the distribution. To my knowledge none of the previous works have investigated this.
 
 \section{Hypothesis}
 \label{s:a-o-hypotheses}
 
-Using the above two methods ``triples'' and ``pure-query-decoder'' models, I investigated a hypothesis about selecting a better sampling order on a toy dataset.
+By training a transformer model with the pretraining method described in \Cref{sss:pretraining-triples}, we get a model which can be used to sample any position in the image. We can then use this model to sample the image in different orders, and compare the results.
 
-The hypothesis was as follows.
+Using the model we can choose a dynamic ordering in which to sample a sequence at inference time. In particular, one of the ways we can do this is by evaluating the \textit{entropy} of all candidate positions, then sampling from the one with either the lowest or the highest entropy.
 
-Assume that using the above methods, we can choose a dynamic ordering in which to sample a sequence at inference time. In particular, one of the ways we can do this is by evaluating the \textit{entropy} of all candidate positions, then sampling from the one with either the lowest or the highest entropy.
-
-When auto-regressively sampling pixels to produce MNIST images, using a ``lowest-entropy-first'' ordering might produce visually better results than a ``highest-entropy-first'' ordering.
+My hypothesis was that when auto-regressively sampling pixels to produce MNIST images, using a ``lowest-entropy-first'' ordering will produce visually better results than a ``highest-entropy-first'' ordering.
 
 \section{Method}
 
-To investigate this hypothesis, I developed and trained a transformer model on two separate tasks - one for predicting the next pixel in a sequence, and one for predicting a random. I compared a variety of architecture choices and training methods. I show the results of these experiments as figures for subjective evalutaion throughout this chapter.
+To investigate this hypothesis, a transformer neural process was trained with the pretraining method described in \Cref{sss:pretraining-triples}, on the MNIST dataset. The model was then used to sample images in different orders, and the results were compared.
 
 \subsection{Data}
 
-This series of experiments uses the MNIST dataset, which is a set of 28x28 grayscale images of handwritten digits. The dataset is split into a training set of 60,000 examples, and a test set of 10,000 examples. Each image is labeled with the digit it represents, from 0 to 9, but I did not use this information in my experiments. Each pixel is represented as a value between 0 and 255, where 0 is black and 255 is white.
+This series of experiments uses the MNIST dataset, which is a set of 28x28 grayscale images of handwritten digits. The dataset was split into a training set of 60,000 examples, and a test set of 10,000 examples. Each image is labeled with the digit it represents, from 0 to 9, but the labels were not used in the experiments. Each pixel is represented as a value between 0 and 255, where 0 is black and 255 is white.
 
-Instead of representing full 256 colors, I used a 2-bit representation, where each pixel is represented as a value between 0 and 3. I discretized the 256 colors into 4 colors using a learned k-means clustering over the whole dataset. This was to simplify the form of the distribution that the model would output, and remove any complextity here as an additional variable to debug. I found that 4 colors was the smallest representation that gave good visual quality when the images were reconstructed.
+Instead of representing full 256 colors, a 2-bit representation was used, where each pixel is represented as a value between 0 and 3. The 256 colors were discretized further into 4 colors using a learned k-means clustering over the all pixel values in the MNIST training set. This was done to simplify the form of the distribution that the model would output, and remove any complextity here as an additional variable to debug. 4 colors was the smallest representation that gave good visual quality when the images were reconstructed.
 
-To turn MNIST data into a sequence prediction task, I used the following procedure. For each image, I created a sequence of 28x28 pairs, where each pair is a pixel position and a pixel value. The pixel position is represented as a pair of integers, where the first integer is the row number, and the second integer is the column number. The pixel value is represented as a single integer, where 0 is black, 1 is dark gray, 2 is light gray, and 3 is white.
+The MNIST images were then formatted into a sequence prediction task using the following procedure. First, each image was treated as a sequence of $28\times28 = 784$ triplets, where each triplets contains three integers: the row index of the pixel and the column index of the pixel (both in the range $[0, 28)$), and the pixel value (in the range $[0, 4)$ -- 0 = black, 1 = dark gray, 2 = light gray, and 3 = white).
 
+The sequence of triplets was then shuffled to form a random permutation of the pixels. The row and column indices of each pixel were then appended to the previous triplet, forming a 5-tuple. This was done to specify the target position that the model should predict, which it could no longer infer from the ordering of the sequence since the sequence was shuffled.
 
-The tasks the model was trained on are then both as follows: ``Given a sequence of pairs, and a target position, predict the value of the pixel at that position.''
+Lastly, all of the integers each 5-tuple were embedded using a learned codebooks, and the resulting sequence of embedding vectors was used as the input to the model.
 
-However, in the first task the pairs are presented in a contiguous forward-only order, and in the second task the pairs are presented in a non-contiguous, random order. In the random order task, many unique permutations of each training image are created using on-the-fly data augmentation. This is to ensure that the model is not overfitting to a specific ordering of the training data.
-
-We can see examples of this in \cref{fig:mnist-task-examples}.
+Some examples of this task are shown in \Cref{fig:mnist-task-examples}.
 
 \begin{figure}
     \centering
     \includegraphics[width=0.7\linewidth]{figures/examples-sequential.png}
     \includegraphics[width=0.7\linewidth]{figures/examples-random.png}
-    \caption[Examples of the two MNIST training tasks]{Examples of the two tasks, showing input sequences with progressively more pixels filled in. (Pink means the pixel was not provided). Top: Pixels are presented in a contiguous forward-only order. Bottom: Pixels are presented in a non-contiguous, random order.}
+    \caption[Examples of the MNIST training task]{Examples of two tasks, showing input sequences with progressively more pixels filled in. (Pink means the pixel was not provided). Top: Pixels presented in a contiguous forward-only order. Bottom: Pixels are presented in a non-contiguous, random order. This is the task that the model in this experiment was trained on.}
+    \hrulefill
     \label{fig:mnist-task-examples}
 \end{figure}
 
-In addition to the above encoding I experiment with three different pre-training task formats for the data. The first is forward-only auto-regressive pretraining as in the previous chapter (\Cref{fig:pretraining-causal}). The second is a ``Masked Sequence Modeling'' task, where I mask out a random subset of the pixels in the image, and the model is trained to predict the masked out pixels, and the final one is the ``Arbitrary-order auto-regressive pretraining`` variant I describe above in \Cref{sss:pretraining-triples}.
+\section{Training}
 
-\subsection{Models}
+A transformer model was then trained on the described task. A table of training details is shown in \Cref{tab:training-details}.
 
-\subsubsection{Architecture choices}
+\begin{table}[h]
+    \centering
+    \begin{tblr}
+        {
+            vlines,
+            rows={m},
+        }
+        \hline
+        N° embedding dims & 256 \\
+        N° layers & 5 \\
+        N° hidden dims & 515 \\
+        N° attention heads & 12 \\
+        Total N° parameters & 17,495,809 \\
+        Batch size & 32 \\
+        Sequence length & 784 \\
+        Training time & 1h 27m 4s \\
+        Training steps & 20,000 \\
+        \hline
+    \end{tblr}
+    \caption[Training details]{Training details for the transformer model.}
+    \hrulefill
+    \label{tab:training-details}
+\end{table}
 
-All model architectures shown here are transformer models, but they vary in the following ways:
+\section{Results}
 
-\begin{enumerate}
-    \item Absolute vs relative positional encodings
-    \item Whether or not they include a ``query decoder''.
-    \item If so, whether this decoder has a pooled input or not.
-    \item Number of layers, embedding dimensionality etc.
-\end{enumerate}
+\begin{figure}
+    \centering
+    \begin{minipage}{0.8\linewidth}
+        \includegraphics[width=\linewidth]{figures/mnist-4col-seed.png}
 
+        \vspace{0.5cm}
 
+        \includegraphics[width=\linewidth]{figures/mnist-4col-0.png}
+        \includegraphics[width=\linewidth]{figures/mnist-4col-1.png}
+        \includegraphics[width=\linewidth]{figures/mnist-4col-2.png}
+        \includegraphics[width=\linewidth]{figures/mnist-4col-3.png}
+        \includegraphics[width=\linewidth]{figures/mnist-4col-4.png}
+        \includegraphics[width=\linewidth]{figures/mnist-4col-5.png}
+        \includegraphics[width=\linewidth]{figures/mnist-4col-6.png}
+
+        \vspace{0.5cm}
+
+        \includegraphics[width=\linewidth]{figures/mnist-4col-targ.png}
+    \end{minipage}
+    \captionsetup{parskip=7pt}
+    \caption[Visualization of convergence during training]{The above figure shows the probabilistic 4-color model converging as it is trained. This was the model used for the sampling order experiments.
+
+    Top: Seed inputs provided to the model. Pink pixels represent inputs not provided.
+
+    Middle, descending: The expected value of the model's distribution over the unknown values as the training process progresses.
+
+    Bottom: Ground truth images.}
+    \label{fig:training-4col}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{minipage}{0.8\linewidth}
+        \includegraphics[width=\linewidth]{figures/mnist-training-seed.png}
+
+        \vspace{0.5cm}
+
+        \includegraphics[width=\linewidth]{figures/mnist-training-0.png}
+        \includegraphics[width=\linewidth]{figures/mnist-training-1.png}
+        \includegraphics[width=\linewidth]{figures/mnist-training-2.png}
+        \includegraphics[width=\linewidth]{figures/mnist-training-3.png}
+        \includegraphics[width=\linewidth]{figures/mnist-training-4.png}
+        \includegraphics[width=\linewidth]{figures/mnist-training-5.png}
+
+        \vspace{0.5cm}
+
+        \includegraphics[width=\linewidth]{figures/mnist-training-target.png}
+    \end{minipage}
+    \captionsetup{parskip=7pt}
+    \caption[Visualization of convergence during training]{The above figure shows a deterministic model converging as it is trained. This model predicts the pixel values as a floating point value directly, rather than as a probability distribution.
+
+    Top: Seed inputs provided to the model. Pink pixels represent inputs not provided.
+
+    Middle, descending: The model's prediction over the unknown values as the training process progresses.
+
+    Bottom: Ground truth images.}
+    \label{fig:training-deterministic}
+\end{figure}
+
+The results of the model are shown in \Cref{fig:training-4col}. For comparison, a deterministic model trained on a standard forward-only autoregressive pretraining task is shown in \Cref{fig:training-deterministic}. The deterministic model was trained for the same number of steps, and with the same hyperparameters as the probabilistic model, but was trained on a different task and with a different loss function.
 
 \section{Discussion}
 \label{s:a-o-discussion}
@@ -144,8 +228,15 @@ Let us imagine that the model outputs a gaussian =- more specifically it outputs
 
 If we select the next position $i$ randomly, then when we sample $y_i \sim q(i)$, since the means of the error terms $\epsilon_\mu$ and $\epsilon_\sigma$ are both 0, the expected value of $y_i$ remains $\mu$.
 
-However, when we select the next location $i$ to sample based on the entropy of $q(i)$, we select the location among many which has the highest (or lowest) variance $\sigma + \epsilon_\sigma$. On average, we will select a position with both high contribution from $\sigma$, \textbf{and} high contribution  from $\epsilon_\sigma$. Because of the high $\epsilon_\sigma$ term, this selection biases us towards sampling from distributions where the model is more uncertain than in the true distribution. We will therefore draw samples that are on average \textbf{less likely} in the true distribution. I.e. $\E[p(y_i \mid x_i, y_{<i}, x_{<i})] < \E[q(i)]$. To summarize, when we select an $i$ because the corresponding $q(i)$ has high entropy (variance), and then sample from this distribution, we will produce a pixel with a value that has $p(y) < q(y)$. The reverse is true for the ``lowest-entropy-first'' ordering. This is the bias that we are introducing into a \textit{single} prediction from the model.
+However, when we select the next location $i$ to sample based on the entropy of $q(i)$, we select the location among many which has the highest (or lowest) variance $\sigma + \epsilon_\sigma$. On average, we will select a position with both high contribution from $\sigma$, \textbf{and} high contribution  from $\epsilon_\sigma$. Because of the high $\epsilon_\sigma$ term, this selection biases us towards sampling from distributions where the model is more uncertain than in the true distribution. We will therefore draw samples that are on average \textbf{less likely} in the true distribution. i.e. $\E[p(y_i \mid x_i, y_{<i}, x_{<i})] < \E[q(i)]$. To summarize, when we select an $i$ because the corresponding $q(i)$ has high entropy (variance), and then sample from this distribution, we will produce a pixel with a value that has $p(y) < q(y)$. The reverse is true for the ``lowest-entropy-first'' ordering. This is the bias that we are introducing into a \textit{single} prediction from the model.
 
 I claim this same reasoning applies for the discrete case which I actually used in the experiment -- we can add an $\epsilon$ term to the logits, which when selecting for high entropy, pushes them towards the uniform distribution, and when selecting for low entropy, pushes them away. It so happens that on MNIST, this typically means the pixel will be brighter.
 
 As we repeat this process, we will produce some pixels that are on average brighter than the true sequence. When the model is conditioned on these, it will generally infer that the remaining pixels should be brighter as well. This is why the ``highest-entropy-first'' ordering produces images that are as a whole brighter than the ``lowest-entropy-first'' ordering, and why both are shifted away from the ``random'' ordering.
+
+\section{Conclusions and Future Work}
+\label{s:a-o-conclusions}
+
+In this chapter, we have shown that the order in which we sample from a model can in practice have an impact on the quality of the samples produced, despite different sampling orders being equivalent in principle. However we also showed that sampling with ``lowest-entropy-first'' and ``highest-entropy-first'' produce a directional bias in the samples produced. This bias is due to the fact that the model is imperfect, and selecting locations based on the entropy has the effect of compounding these imperfections. With some assumptions about the nature of these imperfections, we showed that sampling with a ``highest-entropy-first'' ordering shifts the samples towards the uniform distribution, and sampling with a ``lowest-entropy-first'' ordering shifts the samples away from the uniform distribution.
+
+Future work could explore the effect of this bias under different classes of probability distributions, and investigate other sampling orders such as a learned order.

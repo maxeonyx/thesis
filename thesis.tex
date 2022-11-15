@@ -15,6 +15,7 @@
 \usepackage{url} % for typesetting urls
 \usepackage{amsfonts}
 \usepackage{amsmath}
+
 \usepackage{biblatex}
 \addbibresource{myrefs.bib}
 
@@ -22,7 +23,7 @@
 \usepackage{unicode-math}
 
 \usepackage{amsthm}
-
+\usepackage{emptypage}
 \usepackage{standalone}
 
 \usepackage[nodisplayskipstretch]{setspace}
@@ -31,7 +32,7 @@
 \DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
 \let\mathbb\relax % remove the definition by unicode-math
 \DeclareMathAlphabet{\mathbb}{U}{msb}{m}{n}
-
+\usepackage{tocloft}
 
 \usepackage[dvipsnames]{xcolor}
 \newcommand\myshade{85}
@@ -47,8 +48,8 @@
 
 \usepackage[colorlinks]{hyperref}
 \hypersetup{
-    pdftitle={Maxwell Clarke MSc Proposal},
-    pdfsubject={Conditional Generative Transformers for Hand-Guided Animation Automation},
+    pdftitle={Maxwell Clarke MSc Thesis},
+    pdfsubject={Arbitrary-order Sampling and Hand Motion Modeling with Transformers},
     pdfauthor={Maxwell Clarke},
     pdfkeywords={Artificial Intelligence, AI, Machine Learning, ML, Neural Networks, Deep Learning, Transformers, Transformer models, Gaussian Processes, Bayesian Inference, Animation, Virtual Reality, VR, Skeletal Animation, Character Animation, Victoria University of Wellington, VUW},
     linkcolor  = mylinkcolor!\myshade!black,
@@ -56,6 +57,22 @@
     urlcolor   = myurlcolor!\myshade!black,
     colorlinks = true,
 }
+
+\usepackage{tabularray}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\fancyfoot{}
+\fancyhead[RO]{\thepage}
+\fancyhead[LE]{\thepage}
+
+\fancypagestyle{plain}{%
+\fancyfoot{}
+\fancyhead[RO]{\thepage}
+\fancyhead[LE]{\thepage}
+}
+
+
 
 \usepackage[nameinlink]{cleveref}
 
@@ -95,10 +112,12 @@
 \include{thesis/0-2-acknowledge}
 
 \tableofcontents
+\clearpage
 
 \listoffigures
-\newpage
+
 \listoftables
+\cleardoublepage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

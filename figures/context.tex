@@ -2,30 +2,30 @@
     \pgfdeclarelayer{bg}
     \pgfsetlayers{bg,main}
     \tikzstyle{every node}=[draw,fill=white, text width=4cm,anchor=west, node distance=5cm]
-    
-    \node (deconly) at (2.5cm, 0) { \textbf{\Cref{ss:decoder-only}} \\ Decoder-only \\ transformers. };
-    \node[right of=deconly] (autoregpre) { \textbf{\Cref{ss:autoregpre}} \\ Autoregressive pretraining. };
-    
+
+    \node (deconly) at (2.5cm, 0.5) { \textbf{\Cref{ss:decoder-only}} \\ Decoder-only \\ transformers. };
+    \node[right of=deconly] (autoregpre) { \textbf{\Cref{ss:autoreg-pretraining}} \\ Autoregressive pretraining. };
+
     \node (categorical) at (0, -2.5cm) { \textbf{\Cref{ss:cat-dist}} \\ Categorical distribution/classification. };
     \node[right of=categorical] (aoautoregpre) { \textbf{\Cref{sss:pretraining-triples}} \\ Arbitrary-order \\ autoregressive \\ pretraining. };
     \node[right of=aoautoregpre] (amse) { \textbf{\Cref{ss:amse}} \\ Mean squared \\ angular error loss. };
     \node[right of=amse, node distance=6cm] (vonmises) { \textbf{\Cref{ss:von-mises}} \\ von-Mises distribution over angles. };
-    
+
     \node[below of=categorical,node distance=3.5cm,xshift=2.5cm] (chapter4) {\textbf{\Cref{C:a-o-sampling}} \\ Arbitrary order sampling on MNIST};
     \node[below of=amse,node distance=3.5cm,text width=5cm] (chapter62) {\textbf{\Cref{C:hand-model}, \Cref{S:mean-model}} \\ A deterministic model for hand motion modeling};
     \node[below of=vonmises,node distance=3.5cm,text width=5cm] (chapter63) {\textbf{\Cref{C:hand-model}, \Cref{S:prob-model}} \\ A probabilistic model for hand motion modeling};
-    
+
     \begin{pgfonlayer}{bg}
         \draw[->] ([xshift=-4pt]autoregpre.south) to (aoautoregpre);
         \draw[->] (autoregpre.south) to (chapter62.north);
         \draw[->,bend left=10] ([xshift=3pt]autoregpre.south) to (chapter63.north);
-        
+
         \draw[->] (aoautoregpre.south) to ([xshift=8pt]chapter4.north);
-        
+
         \draw[->] (deconly.south) to (chapter4.north);
         \draw[->, bend left=15] ([xshift=5pt]deconly.south) to ([xshift=-8pt]chapter62.north);
         \draw[->, bend left=12] ([xshift=10pt]deconly.south) to ([xshift=-10pt]chapter63.north);
-        
+
         \draw[->] (categorical) to ([xshift=-8pt]chapter4.north);
         \draw[->] (amse) to ([xshift=8pt]chapter62.north);
         \draw[->] (vonmises) to ([xshift=8pt]chapter63.north);
