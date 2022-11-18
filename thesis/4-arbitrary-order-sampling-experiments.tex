@@ -109,7 +109,7 @@ The MNIST images were then formatted into a sequence prediction task using the f
 
 The sequence of triplets was then shuffled to form a random permutation of the pixels. The row and column indices of each pixel were then appended to the previous triplet, forming a 5-tuple. This was done to specify the target position that the model should predict, which it could no longer infer from the ordering of the sequence since the sequence was shuffled.
 
-Lastly, all of the integers each 5-tuple were embedded using a learned codebooks, and the resulting sequence of embedding vectors was used as the input to the model.
+Lastly, all of the integers each 5-tuple were embedded using learned codebooks, and the resulting sequence of embedding vectors was used as the input to the model.
 
 Some examples of this task are shown in \Cref{fig:mnist-task-examples}.
 
@@ -117,7 +117,12 @@ Some examples of this task are shown in \Cref{fig:mnist-task-examples}.
     \centering
     \includegraphics[width=0.7\linewidth]{figures/examples-sequential.png}
     \includegraphics[width=0.7\linewidth]{figures/examples-random.png}
-    \caption[Examples of the MNIST training task]{Examples of two tasks, showing input sequences with progressively more pixels filled in. (Pink means the pixel was not provided). Top: Pixels presented in a contiguous forward-only order. Bottom: Pixels are presented in a non-contiguous, random order. This is the task that the model in this experiment was trained on.}
+    \captionsetup{parskip=7pt}
+    \caption[Examples of the MNIST training task]{Examples of two tasks, showing input sequences with progressively more pixels filled in. (Pink means the pixel was not provided).
+
+    Top: Pixels presented in a contiguous, forward-only order.
+
+    Bottom: Pixels are presented in a non-contiguous, random order. This is the task that the model in this experiment was trained on.}
     \hrulefill
     \label{fig:mnist-task-examples}
 \end{figure}
@@ -145,7 +150,7 @@ A transformer model was then trained on the described task. A table of training 
         Training steps & 20,000 \\
         \hline
     \end{tblr}
-    \caption[Training details]{Training details for the transformer model.}
+    \caption[Training details of MNIST model]{Training details for the probabililistic 4-color model.}
     \hrulefill
     \label{tab:training-details}
 \end{table}
@@ -211,12 +216,43 @@ A transformer model was then trained on the described task. A table of training 
     \label{fig:training-deterministic}
 \end{figure}
 
-The results of the model are shown in \Cref{fig:training-4col}. For comparison, a deterministic model trained on a standard forward-only autoregressive pretraining task is shown in \Cref{fig:training-deterministic}. The deterministic model was trained for the same number of steps, and with the same hyperparameters as the probabilistic model, but was trained on a different task and with a different loss function.
+Some predicted images using this model are shown in \Cref{fig:training-4col}. For comparison, a deterministic model trained on a standard forward-only autoregressive pretraining task is shown in \Cref{fig:training-deterministic}. The deterministic model was trained for the same number of steps, and with the same hyperparameters as the probabilistic model, but was trained on a different task and with a different loss function.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/samples-sequential.png}
+    \includegraphics[width=0.8\linewidth]{figures/sampling-order-sequential.png}
+
+    \vspace{0.7cm}
+    \includegraphics[width=0.8\linewidth]{figures/samples-random.png}
+    \includegraphics[width=0.8\linewidth]{figures/sampling-order-random.png}
+
+    \vspace{0.7cm}
+    \includegraphics[width=0.8\linewidth]{figures/samples-high-entropy.png}
+    \includegraphics[width=0.8\linewidth]{figures/sampling-order-high-entropy.png}
+
+    \vspace{0.7cm}
+    \includegraphics[width=0.8\linewidth]{figures/samples-low-entropy.png}
+    \includegraphics[width=0.8\linewidth]{figures/sampling-order-low-entropy.png}
+    \captionsetup{parskip=7pt}
+    \caption[Visualization of predicted images with different sampling orders]{The above figure shows the effect of the sampling order on the visual quality of the predicted images, using the probabilistic 4-color model. Each pair of rows shows predicted images and a visualization of the sampling order used to generate it, respectively. The bottom row of each pair is a visualization of the sampling order, where the color of each pixel indicates the order in which it was sampled -- black pixels were sampled first, and white pixels were sampled last.
+
+    Top: Sequential sampling order, where pixels are sampled in the order they appear in the image.
+
+    Top-middle: Random sampling order, where pixels are sampled in a random order.
+
+    Bottom-middle: Highest-entropy-first sampling order, where pixels are sampled in order of decreasing entropy.
+
+    Bottom: Lowest-entropy-first sampling order, where pixels are sampled in order of increasing entropy.}
+    \label{fig:order-comparison}
+\end{figure}
+
+The results of using the model to sample images using different sampling orders are shown in \Cref{fig:order-comparison}.
 
 \section{Discussion}
 \label{s:a-o-discussion}
 
-As we can see in \Cref{fig:order-comparison}, the ``lowest-entropy-first'' ordering produces distinct images from the ``highest-entropy-first'' ordering. However, neither are as good as the ``random'' ordering.
+As we can see in \Cref{fig:order-comparison}, the ``lowest-entropy-first'' ordering produces distinct images from the ``highest-entropy-first'' ordering. However, neither are as good as the ``random'' ordering. This clearly disproves the hypothesis that the ``lowest-entropy-first'' ordering would produce the best results.
 
 Why do the ``lowest-entropy-first'' and ``highest-entropy-first'' orderings produce such different results? Why should they be different from the ``random'' ordering?
 

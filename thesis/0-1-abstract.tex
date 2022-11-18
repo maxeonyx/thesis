@@ -4,9 +4,7 @@ Transformer models are quickly taking over the field of deep learning, due to th
 
 Firstly, a comprehensive introduction to transformer models is given, including the attention operation, masking, architecture variants, and different pre-training tasks.
 
-Secondly, some experiments are performed examining the use of transformer models for \textit{arbitrary-order} sampling. A model is constructed and trained which can be used to predict sparse sequence data in any order, and this is demonstrated on the MNIST dataset. Different sampling orders are then compared, including some \textit{dynamic} sampling order heuristics such as sampling the locations with the highest entropy. The experiments find that dynamic sampling orders based on the entropy introduce a statistical bias into the samples.
+Secondly, an experiment is presented using a transformer model on the MNIST dataset, which was trained so that it is capable of \textit{arbitrary-order} sampling. The experiment compares different sampling orders, including some \textit{dynamic} sampling order heuristics based on the entropy. The experiments find that such sampling orders introduce a statistical bias into the samples.
 
-Thirdly, the problem domain of hand motion and hand animation is introduced. Loss functions for learning angles and rotations are discussed, and various ways to parameterize hand poses and probability distributions over hand poses.
-
-Lastly, some transformer models are trained to generate hand-motion sequences, via self-supervised learning on a motion-capture dataset. The learned models are able to generate realistic-looking hand motions, but are unable to be directed to generate specific motions.
+Lastly, the problem domain of hand motion modeling is introduced, and two transformer models are trained to generate hand-motion sequences, via self-supervised learning on a motion-capture dataset. The first model can generate realistic-looking hand motions, but cannot be directed to generate specific motions. The second model performs poorly.
 }

@@ -160,7 +160,7 @@ O &= W_{O}O + \vb_{O}
 \end{align}
 where $\text{split}$ and $\text{concat}$ are operations which split and concatenate the tensor along the $D$ dimension.
 
-\subsection{Training task and input formats}
+\subsection{Input embedding and positional encoding}
 \label{ss:transformer-inputs}
 
 Attention operates a sequence of latent vectors $\X$, but the input to a transformer model will not necessarily be in this format. Mapping the input into this format is the job of the embedding layer. The form of the embedding layer depends on the task being solved. For example, in language modelling, the input is provided as discrete tokens. The embedding layer is then a lookup table (also called a codebook), which maps each token to a learned vector. In timeseries data, the input is provided as a sequence of real-valued vectors. The embedding layer is then a linear transformation, which maps each vector to a learned vector.
@@ -189,7 +189,7 @@ In order to train a model on large unlabeled data, it needs to be formatted into
     \label{fig:pretraining-msm}
 \end{figure}
 
-Masked sequence modeling is a pretraining task which uses the first kind of masking -- input masking -- to define random tasks. In this task, a random subset of sequence elements is masked out, and the model is trained to reconstruct the masked inputs. Input masking means that the `content' embedding is replaced with a `mask' embedding (which is a learned vector). The positional encoding is still provided. A diagram of this is shown in \Cref{fig:msm}.
+Masked sequence modeling is a pretraining task which uses the first kind of masking -- input masking -- to define random tasks. In this task, a random subset of sequence elements is masked out, and the model is trained to reconstruct the masked inputs. Input masking means that the `content' embedding is replaced with a `mask' embedding (which is a learned vector). The positional encoding is still provided. A diagram of this is shown in \Cref{fig:pretraining-msm}.
 
 \subsection{Causal Masking \& Auto-regressive pretraining}
 \label{ss:autoreg-pretraining}
@@ -198,6 +198,7 @@ Masked sequence modeling is a pretraining task which uses the first kind of mask
     \centering
     \includegraphics[]{figures/attn-1-self.pdf}
     \caption[Self-attention]{Full self-attention (bi-directional attention), as used in transformer encoders. The blue shaded regions show which inputs are used to compute each output. In full self-attention, all inputs are used to compute all outputs.}
+    \hrulefill
     \label{fig:self-attn}
 \end{figure}
 
@@ -218,6 +219,7 @@ Masked sequence modeling is a pretraining task which uses the first kind of mask
 \begin{figure}
     \includegraphics[width=\linewidth]{figures/attention_masks.pdf}
     \caption[Attention Masks]{Masking in unified attention layers \cite{unilm,t5}. The bi- and uni-directional attention can be performed within a single attention layer.}
+    \hrulefill
     \label{fig:unified-masking}
 \end{figure}
 
@@ -236,7 +238,7 @@ The following chapter experiments with a new pre-training task, which is a varia
 
 Input masking and attention masking can be combined arbitrarily into a single pretraining task, as we see in \Cref{fig:unified-masking}. This is called \textit{unified} pretraining / masking eg. \cite{unilm,t5}.
 
-Unified pretraining allows the use of a model as either a bidirectional or unidirectional model, but it is costly because the attention matrix is $O((A+B)^2)$, where $A$ is the sequence of inputs that will be encoded with bidirectional attention, and $B$ is the sequence of inputs that will be encoded with unidirectional attention.
+A model trained with unified pretraining can be used as either a bidirectional or unidirectional model. However, the training is costly, because the attention matrix is $O((A+B)^2)$, where $A$ is the sequence of inputs that will be encoded with bidirectional attention, and $B$ is the sequence of inputs that will be encoded with unidirectional attention.
 
 \subsection{Cross attention}
 \label{ss:cross-attn}
@@ -319,7 +321,8 @@ These models are known as T5 models: \textbf{T}ext-\textbf{T}o-\textbf{T}ext \te
 \begin{figure}
     \centering
     \includegraphics[]{figures/attn-4-partial.pdf}
-    \caption[Partial self-attention]{Partial self-attention, as used during incremental autoregressive inference (in models with a decoder).}
+    \caption[Partial self-attention]{Partial self-attention, as used during incremental inference (fast decoding).}
+    \hrulefill
     \label{fig:partial-self-attn}
 \end{figure}
 

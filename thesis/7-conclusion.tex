@@ -1,11 +1,13 @@
 \chapter{Conclusions}
 \label{C:conclusion}
 
-To conclude, the main conclusions from the experiments in \Cref{C:a-o-sampling} and \Cref{C:hand-model}, are summarized, along with some reflections on the project as a whole.
+To conclude, the main conclusions from the experiments in \Cref{C:a-o-sampling} and \Cref{C:hand-model} are summarized, along with some reflections on the project as a whole.
 
 \section{Conclusions}
 
-\TODO{Add conclusions from the experiments.}
+\Cref{C:a-o-sampling} trained a probabilistic model on sequences of pixels in MNIST, and compared the effect of sampling pixels in a variety of orders. The results of this experiment was the discovery that using ``highest-entropy-first'' and ``lowest-entropy-first'' as heuristics for determining the sampling orders resulted in biased samples, of worse visual quality than using a ``random'' sampling order. This is most likely due to imperfections in the model being exacerbated during the sampling process by the entropy hueristic, but not by the random sampling order.
+
+\Cref{C:hand-model} trained both a deterministic model and a probabilistic model on sequences of hand poses from the ManipNet dataset. The deterministic model was able to generate sequences of hand poses that were visually similar to the training data, but the probabilistic model performed very poorly. The conclusion as to why is unclear however, since due to time constraints the experiments needed to investigate why have not been performed. Further investigation is required.
 
 \section{Reflections}
 

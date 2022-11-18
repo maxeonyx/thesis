@@ -243,6 +243,7 @@ where $Y$ and $\hat{Y}$ are sequences of vectors of angles, with batch shape $N$
     \includegraphics[width=0.9\linewidth]{figures/loss-arc.pdf}
     \captionsetup{parskip=7pt}
     \caption[Arc distance loss]{The arc distance loss function is the distance between two angles on the unit circle, analogous to the absolute distance for unbounded variables. It is zero when the two angles are equal, and increases linearly as the angles move further apart. The function is not differentiable at $y = \hat{y}$ and $y = \hat{y} + \pi$.}
+    \hrulefill
     \label{fig:loss-arc}
 \end{figure}
 \begin{figure}
