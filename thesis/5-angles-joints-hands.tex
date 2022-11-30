@@ -1,7 +1,7 @@
 \chapter{Angles, Joints and Hands}
 \label{C:angles-joints-hands}
 
-The next chapter discusses the development of a model to predict motion of a human hand. To understand the model and some of the implementation choices, it is necessary to understand the anatomy of the hand, and how the many degrees of freedom of the hand can be represented (paramaterized). This chapter discusses the different ways to parameterize angles, 3D rotations, and collections of many joints. It also introduces some loss functions for training neural networks where the input and output are angles.
+This next chapter discusses the development of a model to predict motion of a human hand. To understand the model and some of the implementation choices, it is necessary to understand the anatomy of the hand, and how the many degrees of freedom of the hand can be represented (paramaterized). This chapter discusses the different ways to parameterize angles, 3D rotations, and collections of many joints. It also introduces some loss functions for training neural networks where the input and output are angles.
 
 \section{Representing Angles}
 
@@ -42,27 +42,25 @@ Joints in a human body are connected by bones. The bones are connected by joints
 
 Euler angles are the most common parameterization for human joints. They are also the simplest to understand. Each joint is assigned three angles, one for each axis of rotation. The axes are usually chosen to be the x, y, and z axes of the coordinate system, but they can be chosen to be any three axes that are orthogonal to each other.  For example, the axes could be chosen to be the axes of the joint itself, or the axes relative to the parent joint. The order in which the rotations are applied is also important. The most common order is to apply the rotations in the order $z$, $y$, $x$, but they can be applied in any order.
 
-This parameterization has the topology $S^1 \times S^1 \times S^1 ≅ T^3$, where $S^1$ is the circle of angles. However, the space of rotations $SO(3)$ itself has topology $S^3$, so the Euler angle parameterization cannot be perfect. In particular, there must be singularities.
+This parameterization has the topology $S^1 \times S^1 \times S^1 ≅ T^3$, where $S^1$ is the circle of angles. However, the space of rotations $SO(3)$ itself has topology $S^3$, so the Euler angle parameterization cannot be perfect. 
 
-The principle advantage of the Euler angle parameterization is that it is easy to understand and implement. The principle disadvantages are due to the singularities:
+The principle advantage of the Euler angle parameterization is that it is easy to understand and implement. The principle disadvantages are due to the imperfect mapping between $T^3$ and $S^3$:
 \begin{enumerate}
-    \item there may be multiple sets of Euler angles that correspond to the same rotation
-    \item as a result, we cannot easily interpolate between two configurations that are close together but have different Euler angles
+    \item there may be multiple sets of Euler angles that correspond to the same rotation,
+    \item as a result, we cannot easily interpolate between two configurations that are close together but have different Euler angles.
 \end{enumerate}
 
-For example, if we rotate a joint by $90^\circ$ about the $x$ axis, and then by $90^\circ$ about the $y$ axis, we will get the same rotation as if we had rotated by $90^\circ$ about the $y$ axis, and then by $90^\circ$ about the $x$ axis.
-
-If we tried to interpolate between these two configurations, we would get a rotation that is not the same as either of the two configurations. This occurs because the Euler angle parameterization is not a smooth function.
+For example, if we rotate a joint by $90^\circ$ about the $x$ axis, and then by $90^\circ$ about the $y$ axis, we will get the same rotation as if we had rotated by $90^\circ$ about the $y$ axis, and then by $90^\circ$ about the $z$ axis. However, these correspond to two different sets of Euler angles. If we tried to interpolate between these two configurations, we would (undesirably) get a rotation that is not the same as either of the two configurations.
 
 \subsection{Axis-Angle}
 
 An alternative parameterization for the rotation of a 3D object or joint is to use an axis-angle representation. In this representation, each joint is assigned a 3-component unit vector and an angle. The unit vector specifies an axis of rotation, and the angle specifies an amount of rotation about that axis. It might be surprising that any rotation in 3D can be represented this way.
 
-The axis-angle representation has the topology $S^2 \times S^1$, where $S^2$ is the sphere of unit vectors. Because topology still does not match the space of rotations $SO(3)$, there are still singularities. However, there are fewer of them, and they are easier to avoid. An example of non-uniqueness is when the angle of rotation is zero, this corresponds to no rotation at all regardless of the axis of rotation.
+The axis-angle representation has the topology $S^2 \times S^1$, where $S^2$ is the sphere of unit vectors. Because topology still does not match the space of rotations $SO(3)$, the mapping is still imperfect and there are still regions where multiple parameterizations correspond to the same rotation. However, there are fewer of them, and they are easier to avoid. An example of non-uniqueness is when the angle of rotation is zero, this corresponds to no rotation at all, regardless of the axis of rotation.
 
-This parameterization is also easier to interpolate between. If we rotate a joint by $90^\circ$ about the $x$ axis, and then by $90^\circ$ about the $y$ axis, we will get the same rotation as if we had rotated by $90^\circ$ about the $y$ axis, and then by $90^\circ$ about the $x$ axis.
+The axis-angle parameterization is better than Euler angles for interpolation, because there are fewer singularities. However, there are still failures. For example, any two configurations $(v, \theta)$ and $(-v, \theta+90^\circ)$ represent the same rotation, but interpolating between them causes undesirable behaviour.
 
-However, it is not widely used in practice. The reason is that it is not as easy to understand and implement as the Euler angle parameterization. The main issue is that it is not very intuitive to choose an axis of rotation. When the axis is a coordinate axis it is straightforward, a rotation is to be performed which would involve multiple coordinate axis in an Euler angle representation, instead a single axis must accurately be chosen, which is not very intuitive.
+Axis-angle is not widely used in practice, because it is not as easy to understand and implement as the Euler angle parameterization. The main issue is that it is not very intuitive for a user of a 3D software to choose an axis of rotation. With Euler angles, the axes are a coordinate axis and so are straightforward, but in axis-angle a single axis must accurately be chosen, which is not very intuitive.
 
 \subsection{Quaternions}
 
@@ -182,9 +180,9 @@ It is not so straightforward to assign an angle to each of those 23 degrees of f
 
 \clearpage
 
-\subsection{Heirarchy of Rotations}
+\subsection{Hierarchy of Rotations}
 
-The most common parameterization of the hand is to use a heirarchy of rotations. Each joint is represented as a rotation (using one of the representations discussed in the previous section), along with an position offset, both relative to the previous joint. The magnitude of the offset typically remains fixed, because it represents the length of the bone. The wrist rotation is a rotation relative to the reference frame of the forearm (or the global reference frame, if only the hands are being modeled). The pinky MCP rotation is relative to the reference frame of the wrist, the PIP is relative to the MCP and so on. This means that rotating the wrist will change the position of all the joints in the hand, and rotating the MCP will change the position of all the joints below it, etc.
+The most common parameterization of the hand is to use a hierarchy of rotations. Each joint is represented as a rotation (using one of the representations discussed in the previous section), along with an position offset, both relative to the previous joint. The magnitude of the offset typically remains fixed, because it represents the length of the bone. The wrist rotation is a rotation relative to the reference frame of the forearm (or the global reference frame, if only the hands are being modeled). The pinky MCP rotation is relative to the reference frame of the wrist, the PIP is relative to the MCP and so on. This means that rotating the wrist will change the position of all the joints in the hand, and rotating the MCP will change the position of all the joints below it, etc.
 
 The benefit of this parameterization are that it matches the real kinematics of the hand -- rotating the wrist does in fact change the position of all the joints in the hand. For this reason this parameterization is used for the experiments in \Cref{C:hand-model}.
 
@@ -227,7 +225,7 @@ A graph of this loss function is shown in \Cref{fig:loss-arc}. The loss is zero 
 \subsection{Angular mean squared error loss}
 \label{ss:amse}
 
-The analogous loss functions to the mean squared error for data that sits on the unit circle is the \textit{angular} mean-squared-error, which will be used later on in \Cref{C:hand-model}. It is defined as follows:
+The analogous loss functions to the mean squared error for data that sits on the unit circle is the \textit{angular} mean-squared-error (eg. \cite{circ-statistics}), which will be used later on in \Cref{C:hand-model}. It is defined as follows:
 \newcommand{\amse}{\mathcal{L}_{\theta\text{-MSE}}}
 \begin{align}
 \label{eqn:amse}
@@ -257,34 +255,12 @@ where $Y$ and $\hat{Y}$ are sequences of vectors of angles, with batch shape $N$
 \clearpage
 
 
-\subsection{von-Mises distribution}
-\label{ss:von-mises}
-
-The von-Mises distribution (eg. \cite{von-mises}) is a distribution over angles on the unit circle. It is defined as follows:
-\newcommand{\vm}{\text{vM}}
-\begin{align}
-\label{eqn:von-mises}
-\begin{aligned}
-    \fdef{\vm}{\R×\R}{\R} \\
-    \vm&(\mu, \kappa) = \frac{1}{2\pi I_0(\kappa)} \exp(\kappa \cos(\theta - \mu))
-\end{aligned}
-\end{align}
-where $\mu$ is the modal angle and the circular mean of the distribution, and $\kappa$ is a concentration parameter. The distribution is the uniform distribution on the circle when $\kappa = 0$, and becomes more concentrated as $\kappa$ increases.
-
-$I_0$ is the modified Bessel function of the first kind of order zero:
-\begin{align}
-    \label{notation:bessel}
-    \begin{aligned}
-        \fdef{I_0}{\R}{\R} \\
-        I_0&(x) ≝ \int_{-\pi}^\pi \exp(x \cos t) \, dt
-    \end{aligned}
-\end{align}
-
 \subsection{Motivation for the Angular Mean Squared Error}
+\label{ss:amse-motivation}
 
-The angular mean squared error defined above in \Cref{ss:amse} is not arbitrarily chosen. The motivation for it is described in this subsection. First the derivation of the mean-squared-error from the likelihood function of the Gaussian distribution is given, and then the derivation of the angular mean-squared-error from the likelihood function of the von-Mises distribution.
+The angular mean squared error defined above in \Cref{ss:amse} is not arbitrarily chosen - it is the Maximum Likelihood Estimator (MLE) for the von-Mises distribution (the circular analogue of the Gaussian). The motivation and derivation for it is described in this subsection. First, for context, the derivation of the mean-squared-error from the likelihood function of the Gaussian distribution is given, and then the derivation of the angular mean-squared-error from the likelihood function of the von-Mises distribution.
 
-The Gaussian distribution and the von-Mises distribution are the \textit{maximum-entropy} distributions of their respective domains. This means among all distributions over the real line $x \in (-\infty, \infty)$ with finite mean $\mu$ and variance $\sigma^2$, the Gaussian distribution $N(x \mid \mu, \sigma)$ is the one with the largest entropy. Similarly, among all distributions over the unit circle $x \in (-\pi, pi]$ with circular mean $\mu$ and circular variance $\kappa$, the von-Mises distribution is the one with the largest entropy.
+As introduced in \Cref{ss:von-mises}, the von-Mises distribution is a distribution over angles on the unit circle. The Gaussian distribution and the von-Mises distribution are the \textit{maximum entropy} distributions of their respective domains. This means among all distributions over the real line $x \in (-\infty, \infty)$ with finite mean $\mu$ and variance $\sigma^2$, the Gaussian distribution $N(x \mid \mu, \sigma)$ is the one with the largest entropy. Similarly, among all distributions over the unit circle $x \in (-\pi, pi]$ with circular mean $\mu$ and circular variance $\kappa$, the von-Mises distribution is the one with the largest entropy.
 
 As a result of this fact, training a model which outputs only a mean estimate with a mean-squared-error loss is equivalent to maximizing the likelihood of the data under the Gaussian distribution.
 

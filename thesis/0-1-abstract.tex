@@ -1,10 +1,10 @@
 \abstract{
 
-Transformer models are quickly taking over the field of deep learning, due to their versatility and high performance on many tasks. This thesis provides an introduction to transformer models, presents experiments with new ways of sampling data with them, and then applies them to the domain of hand motion modeling.
+Transformer models have been quickly taking over many tasks in the field of deep learning, due to their versatility while maintaining high performance. This thesis provides an introduction to transformer models, presents experiments with new ways of sampling data with them, and then applies them to the domain of hand motion modeling.
 
 Firstly, a comprehensive introduction to transformer models is given, including the attention operation, masking, architecture variants, and different pre-training tasks.
 
-Secondly, an experiment is presented using a transformer model on the MNIST dataset, which was trained so that it is capable of \textit{arbitrary-order} sampling. The experiment compares different sampling orders, including some \textit{dynamic} sampling order heuristics based on the entropy. The experiments find that such sampling orders introduce a statistical bias into the samples.
+Secondly, an experiment is presented using a probabilistic transformer model on the MNIST dataset, which was trained so that it is capable of \textit{arbitrary-order} sampling. The experiment compares different sampling orders, including some \textit{dynamic} sampling order heuristics based on the entropy. The experiments find that such sampling orders introduce a statistical bias into the samples.
 
-Lastly, the problem domain of hand motion modeling is introduced, and two transformer models are trained to generate hand-motion sequences, via self-supervised learning on a motion-capture dataset. The first model can generate realistic-looking hand motions, but cannot be directed to generate specific motions. The second model performs poorly.
+Lastly, the problem domain of hand motion modeling is introduced, and transformer models are trained to generate hand-motion sequences, via self-supervised learning on a motion-capture dataset. Both deterministic and probabilistic models are trained. The deterministic models can generate realistic-looking hand motions, but cannot be directed to generate specific motions. The probabilistic model performs poorly.
 }

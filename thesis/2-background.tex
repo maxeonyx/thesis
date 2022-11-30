@@ -97,7 +97,7 @@ The parameters of the network are $\theta = \{W_0, ..., W_L, \vb_0, ..., \vb_{L}
 \section{Tasks}
 \label{s:tasks}
 
-\begin{figure}[h]
+\begin{figure}
     \centering
         \includegraphics[width=.7\linewidth]{figures/ontology-1-loss.pdf}
         \vspace{1cm}
@@ -112,7 +112,7 @@ The parameters of the network are $\theta = \{W_0, ..., W_L, \vb_0, ..., \vb_{L}
         \label{fig:ontology-loss}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}
         \centering
         \includegraphics[width=.7\linewidth]{figures/ontology-2-task.pdf}
         \vspace{1cm}
@@ -127,7 +127,7 @@ The parameters of the network are $\theta = \{W_0, ..., W_L, \vb_0, ..., \vb_{L}
         \label{fig:ontology-task}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}
         \centering
         \includegraphics[width=.7\linewidth]{figures/ontology-3-input-shape.pdf}
         \vspace{1cm}
@@ -240,6 +240,31 @@ Another common distribution to use in parameter estimation is the Gaussian distr
 \end{align}
 where $\mu$ and $\sigma$ are mean and variance parameters, and $N$ is the batch size. The Gaussian distribution is a continuous distribution, and so the loss function is the mean-squared-error loss.
 
+\subsection{von-Mises distribution}
+\label{ss:von-mises}
+
+The von-Mises distribution (eg. \cite{von-mises}), also known as the circular normal distribution or Tikhonov distribution, is a distribution over angles on the unit circle. It is defined as follows:
+\newcommand{\vm}{\text{vM}}
+\begin{align}
+\label{eqn:von-mises}
+\begin{aligned}
+    \fdef{\vm}{\R×\R}{\R} \\
+    \vm&(\mu, \kappa) = \frac{1}{2\pi I_0(\kappa)} \exp(\kappa \cos(\theta - \mu))
+\end{aligned}
+\end{align}
+where $\mu$ is the modal angle and the circular mean of the distribution, and $\kappa$ is a concentration parameter. The distribution is the uniform distribution on the circle when $\kappa = 0$, and becomes more concentrated as $\kappa$ increases.
+
+We will use this definition later in \Cref{ss:amse-motivation}. 
+
+$I_0$ is the modified Bessel function of the first kind of order zero:
+\begin{align}
+    \label{notation:bessel}
+    \begin{aligned}
+        \fdef{I_0}{\R}{\R} \\
+        I_0&(x) ≝ \int_{-\pi}^\pi \exp(x \cos t) \, dt
+    \end{aligned}
+\end{align}
+
 \section{Probabilistic models over high-dimensional data}
 
 Let us imagine we are modeling a sequence of $N$ observations $\x_i \in \R^D$, $1 ≤ i ≤ N$ (each observation is a $D$-dimensional vector). To represent the joint distribution over this data, even with a simple gaussian distribution requires $DN + (DN)^2$ parameters ($DN$ means, plus a $DN \times DN$ covariance matrix). If $N$ is large, this is a very large number of parameters, but still manageable.
@@ -278,14 +303,14 @@ Auto-regressive factorization is a third approach to reducing the number of para
 
 When we use an auto-regressive model to predict sequences, we usually choose some fixed order for this decomposition. For data with a temporal dimension, this is usually first-to-last, which is usually natural because the real process that generated the data had a causal structure in the temporal dimension.
 
-However, it is valid to perform the decomposition in any order, for example choosing a random permutation of the sequence(s):
-
+However, it is valid to perform the decomposition in any order, for example choosing a random permutation of the sequence(s), with indices $J$ being the integers up to $N$ as above, but in an arbitrary order:
 \begin{align}
     \label{eqn:ar-factorization-random}
     \begin{aligned}
-        J = {5, 3, 9, 1, ..., N } \\
-        p(\x_1, \x_2, \ldots, \x_N) &= p(\x_1) p(\x_2 | \x_1) p(\x_3 | \x_1, \x_2) \ldots p(\x_N | \x_1, \ldots, \x_{N-1})
+        J &= [5, 3, 9, 1, ...] \\
+        p(\x_5, \x_3, \ldots, \x_{J_N}) &= p(\x_5) p(\x_3 | \x_5) p(\x_9 | \x_5, \x_3) \ldots p(\x_{J_N} | \x_5, \x_3, \x_9, \ldots, \x_{J_{N-1}}).
     \end{aligned}
 \end{align}
+We can see that due to the product rule of probabilities $p(A, B)=p(A|B)P(B)$ that such a factorization will be correct regardless of the order of $J$.
 
 In the case of data that does not have a temporal dimension, such as pixels in an image, or joint angles of a hand (within one frame), simple ordering may not always be the best. Also, some data may have very long sequences and latency requirements (such as character animation data), where it is expensive to generate the data in order, and we would instead like to generate only particular parts of the sequence.
