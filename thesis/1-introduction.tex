@@ -14,6 +14,26 @@ Although much of the work done is summarizing others' research and presenting le
 \end{enumerate}
 These contributions involved training neural networks (see \Cref{fig:context}), in particular transformers, on two datasets - MNIST, and the ManipNet motion capture dataset \cite{manipnet}. The results of these experiments are presented in \Cref{C:a-o-sampling} and \Cref{C:hand-model} respectively.
 
+\section{Structure}
+
+The structure of the remainder of the thesis is as follows:
+
+\begin{enumerate}
+    \item \Cref{C:background} introduces notation and concepts for neural networks which will be used throughout.
+
+    \item \Cref{C:transformers} provides an introduction and literature review of a class of neural network models called \textit{transformers}, which are a class of models that have become very broadly used in the past few years.
+
+    \item \Cref{C:a-o-sampling} presents a novel method for sampling sequence data in an arbitrary order, with the goal of improving model flexibility in domains where sampling order is unimportant. This chapter includes a pre-training task variant, as well as some experiments with this method with transformer models on the MNIST dataset.
+
+    \item \Cref{C:angles-joints-hands} introduces notation and concepts for the problem domain of \textit{hand motion modeling}, including methods for representing and working with joint angles and rotations, and character/hand pose data.
+
+    \item \Cref{C:hand-model} then presents the development of a transformer model for predicting hand pose data and generating animations of hands.
+
+    \item Lastly, \Cref{C:conclusion} summarizes the conclusions of the experiments, and discusses future work and reflections.
+\end{enumerate}
+
+\clearpage
+
 \begin{figure}
     \centering
     \input{figures/context.tex}
@@ -26,21 +46,3 @@ These contributions involved training neural networks (see \Cref{fig:context}), 
     \Cref{C:hand-model} discusses the development of a model for hand motion modeling using the ManipNet \cite{manipnet} hand motion dataset. \Cref{S:mean-model} focuses on a deterministic model, while \Cref{S:prob-model} focuses on a probabilistic model.}
     \label{fig:context}
 \end{figure}
-
-\section{Structure}
-
-The structure of the remainder of the thesis is as follows:
-
-\begin{enumerate}
-    \item \Cref{C:background} introduces notation and concepts for neural networks which will be used throughout.
-
-    \item \Cref{C:transformers} provides an introduction and literature review of a class of neural network models called \textit{transformers}, which are a class of models that have become very broadly used in the past few years.
-
-    \item \Cref{C:a-o-sampling} presents a novel method for sampling sequence data in an arbitrary order, including a pre-training task variant, and experiments with this method with transformer models on the MNIST dataset.
-
-    \item \Cref{C:angles-joints-hands} introduces notation and concepts for the problem domain of \textit{hand motion modeling}, including methods for representing and working with joint angles and rotations, and character/hand pose data.
-
-    \item \Cref{C:hand-model} then presents the development of a transformer model for predicting hand pose data and generating animations of hands.
-
-    \item Lastly, \Cref{C:conclusion} summarizes the conclusions of the experiments, and discusses future work and reflections.
-\end{enumerate}

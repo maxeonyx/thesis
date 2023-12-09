@@ -30,7 +30,7 @@ An example of hand pose estimation is shown in \Cref{fig:pose-estimation}. The i
         \includegraphics[width=\linewidth]{figures/hand-pose-2.png}
     \end{minipage}
     \captionsetup{parskip=7pt}
-    \caption[Hand pose estimation]{An example of the hand pose estimation task, from \cite{hand-pose-survey}. Left: The input to the model is an image or video of a hand. Right: The output is a 3D pose of a hand.}
+    \caption[Hand pose estimation]{An example of the hand pose estimation task, from \cite{zimmermann2017learning}. Left: The input to the model is an image or video of a hand. Right: The output is a 3D pose of a hand.}
     \hrulefill
     \label{fig:pose-estimation}
 \end{figure}
@@ -40,7 +40,7 @@ An example of hand pose estimation is shown in \Cref{fig:pose-estimation}. The i
 
 Human motion modeling is the task of predicting human motion from past motion data. We can divide this into three rough categories, as per \cite{human-motion-modeling-survey}:
 \begin{enumerate}
-    \item Human motion prediction, which is the task of predicting future human motion given an observed sequence of human pose.
+    \item Human motion prediction, which is the task of predicting future human motion given an observed sequence of human poses.
     \item Human motion control, which is the task of producing a sequence of realistic human motion given some goal, eg. a target pose, or a target trajectory.
     \item Cross-modal motion synthesis, which is the task of producing a sequence of human motion given some other input, eg. a sequence of images, or a sequence of audio. This overlaps with pose estimation, because the input to the model is often video data.
 \end{enumerate}
@@ -53,7 +53,7 @@ Human motion modeling is the task of predicting human motion from past motion da
     \label{fig:character-motion-modeling}
 \end{figure}
 
-Most of the literature in this area is focused on character motion, ie. predicting the pose of the body and limbs, rather than the hands or facial expression. For example, there are a number of recent papers on modeling choreographed dancing, which treats character motion as a sequence-to-sequence task, generating a sequence of poses conditional on a music track \cite{dance-choreonet}. Recent works here use encoder-decoder transformers for this purpose, for example \cite{dance-transflower}.
+Most of the literature in this area is focused on character motion, ie. predicting the pose of the body and limbs, rather than the hands or facial expression, although there is also a reasonable body of work on lipsyncing. For example, there are a number of recent papers on modeling choreographed dancing, which treats character motion as a sequence-to-sequence task, generating a sequence of poses conditional on a music track \cite{dance-choreonet}. Recent works here use encoder-decoder transformers for this purpose, for example \cite{dance-transflower}. 
 
 Of the many related works, the most relevant ones are the following:
 \begin{itemize}
@@ -248,7 +248,7 @@ We can see from the figures and video that the probabilistic model unfortunately
 
 The deterministic model performs better than the probabilistic model -- it is able to produce smooth animations, while the probabilistic model produces flickering/noise and also degrades as the sampling process progresses.
 
-The difference in performance may be due to the difference in difficulty on the respective problems. Because the probabilistic model predicts individual component angles, it effectively has a 100$\times$ longer sequence leng. In addition it is trained with a parameter estimation objective, rather than a reconstruction objective, which may be more difficult to optimize - in particular the $\kappa$ (concentration) paramter of the von-Mises distribution.
+The difference in performance may be due to the difference in difficulty on the respective problems. Because the probabilistic model predicts individual component angles, it effectively has a 100$\times$ longer sequence length. In addition it is trained with a parameter estimation objective, rather than a reconstruction objective, which may be more difficult to optimize - in particular the $\kappa$ (concentration) paramter of the von-Mises distribution.
 
 To determine whether the difference in performance is due to the model architecture, or the training objective, a third model could be trained with the $\amse$ loss, but on the sequence-of-single-components task. However, due to time constraints this was not done.
 

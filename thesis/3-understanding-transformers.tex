@@ -7,14 +7,14 @@ This chapter seeks to understand this class of models at a broader level, includ
 \begin{itemize}
     \item The unique properties of the attention operation, which include working with sequences of any length without changing the weights, being able to be computed in parallel across the sequence during training, and being invariant to the order of the inputs.
     \item The different variants of transformers, namely encoder-only, decoder-only, and encoder-decoder models.
-    \item The variety of different tasks that these model are trained on and used for, building up to the next chapter which uses transformers in their most flexible capacity.
+    \item The variety of different tasks that these models are trained on and used for, building up to the next chapter which uses transformers in their most flexible capacity.
 \end{itemize}
 
 The first and most imporant concept to understand is the operation that under-pins transformers -- attention.
 \section{The Attention Operation}
 \label{S:attn}
 
-Attention is a biologically-inspired mechanism that allows a model to receive inputs from distant parts of the input data, weighted by the \textit{attention weight} given to those inputs, which is typically computed from the data itself. This has proven extremely useful for diverse tasks including machine translation, image generation, and more.
+Attention is a mechanism that allows a model to receive inputs from distant parts of the input data, weighted by the \textit{attention weight} given to those inputs, which is typically computed from the data itself. It is loosely biologically-inspired by neuroscience, and has proven extremely useful for diverse tasks including machine translation, image generation, and more. It is often divided into \textit{self-attention} and \textit{cross-attention} -- the former (self-attention) computes attention weights from and applies those weights to the same sequence, and the latter (cross-attention) computes attention weights from one sequence and then applies them to another sequence. However, we will later see in \Cref{fig:unified-masking} that the two can in fact be freely mixed.
 
 Attention has a number of useful properties which come from its mathematical construction, such as permutation-invariance in the inputs.
 
@@ -96,6 +96,8 @@ This property is due to the construction of the attention operator. We can see t
 \end{aligned}
 \end{align}
 
+This property however means that positional information is no longer implicitly provided by the learning process. For many tasks, it becomes neccesary explicitly to provide any appropriate positional information as part of the input, for which there are various schemes called \textit{positional encoding schemes}, which we will discuss shortly (but briefly) in \Cref{ss:transformer-inputs}.
+
 \subsection{Permutation-equivariance with respect to $Q$}
 
 Relatedly, attention is also permutation-\textit{equivariant} with respect to the query inputs. Equivariance means that the value of the output $O_m$ is dependent on the value of the query vector $Q_m$, but independent of the order of all \textit{other} query vectors $Q_{m'}$, $m' ≠ m$.
@@ -106,9 +108,11 @@ This property is due to the fact that softmax operation is equivariant to the or
 
 This property of attention stands in contrast to the two main other methods used to process sequence data, convolution (CNNs) and recurrence (RNNs). Neither of these operations are permutation invariant or equivariant with respect to their inputs.
 
-\subsection{Dynamic length inputs}
+\subsection{Variable length inputs}
 
-The second (and most useful) property of attention is that it can be used to process inputs of dynamic length. We can again see why this is the case from \Cref{eqn:attn-perm-invariance}. The softmax operation normalizes the attention weights, which causes the resulting summation of vectors $V_n$ to be a convex combination. The resulting output $O_m$ will therefore sit within the convex hull of the vectors $V_n$. This means that the output $O_m$ will be a ``valid'' output regardless of the length of the input sequence $K_v$.
+The second (and most useful) property of attention is that it can be used to process inputs of variable length, without retraining. We can again see why this is the case from \Cref{eqn:attn-perm-invariance}. The softmax operation normalizes the attention weights, which causes the resulting summation of vectors $V_n$ to be a convex combination. The resulting output $O_m$ will therefore sit within the convex hull of the vectors $V_n$. This means that the output $O_m$ will be a ``valid'' output regardless of the length of the input sequence $K_v$.
+
+Although, note that models will still typically perform worse on out-of-distribution sequence lengths, ie. sequences that are longer than ones seen in training. One goal when choosing a positional encoding scheme is to reduce this effect.
 
 \subsection{Parallel computation}
 
@@ -118,13 +122,13 @@ The fact that attention can be computed in parallel is a very useful property, s
 
 So attention is a operation with a number of useful properties. Now we will see how it is used to build a variety of models capable of solving a variety of tasks with sequence data.
 
-\section{Basic components of transformers.}
+\section{Basic components of transformers}
 
 An attention operation model does not itself make a neural network. It is simply a building block that can be used to construct a neural network.
 
 \subsection{Residual Blocks}
 
-A transformer model puts attention operations together with MLP blocks similarly to in residual networks (ResNets \cite{resnet}). Without MLP blocks as non-linearities, the outputs of an attention operation are linear functions of the inputs, since the softmax is only used to compute coefficients when summing the values. Because the weights are convex (sum to 1), the output vectors of an attention operation are convex combinations of the value vectors, and will always sit within the convex hull of the value vectors. (However, note that the outputs are non-linear functions of the inputs, due to the fact that the weights are also computed from the inputs). Attention-only we would like to be able to apply non-linear transformations to the value vectors. MLP blocks are used to introduce additional non-linearities into the model.
+A transformer model puts attention operations together with MLP blocks similarly to in residual networks (ResNets \cite{resnet}) -- the result of each \textit{residual block} is added to the inputs of the block. Without MLP blocks as non-linearities, the outputs of an attention operation are linear functions of the inputs, since the softmax is only used to compute coefficients when summing the values. Because the weights are convex (sum to 1), the output vectors of an attention operation are convex combinations of the value vectors, and would always sit within the convex hull of the value vectors. (However, note that the outputs are non-linear functions of the inputs, due to the fact that the weights are also computed from the inputs). Attention-only we would like to be able to apply non-linear transformations to the value vectors. MLP blocks are used to introduce additional non-linearities into the model.
 
 \Cref{fig:residual-block} shows a diagram of a typical residual block in a transformer, with an attention operation, an MLP, and a residual connection.
 
@@ -163,9 +167,9 @@ where $\text{split}$ and $\text{concat}$ are operations which split and concaten
 \subsection{Input embedding and positional encoding}
 \label{ss:transformer-inputs}
 
-Attention operates a sequence of latent vectors $\X$, but the input to a transformer model will not necessarily be in this format. Mapping the input into this format is the job of the embedding layer. The form of the embedding layer depends on the task being solved. For example, in language modelling, the input is provided as discrete tokens. The embedding layer is then a lookup table (also called a codebook), which maps each token to a learned vector. In timeseries data, the input is provided as a sequence of real-valued vectors. The embedding layer is then a linear transformation, which maps each vector to a learned vector.
+Attention operates on a sequence of latent vectors $\X$, but the input to a transformer model will not necessarily be in this format. Mapping the input into this format is the job of the embedding layer. The form of the embedding layer depends on the task being solved. For example, in language modelling, the input is provided as discrete tokens. The embedding layer is then a lookup table (also called a codebook), which maps each token to a learned vector. In timeseries data, the input is provided as a sequence of real-valued vectors. The embedding layer is then a linear transformation, which maps each vector to a learned vector.
 
-Recall that attention is order independent. However, information about the order of inputs is often neccessary to perform a task. When order is important, the embedding layer will include an additional learned vector, which is added to the input vectors. This vector is called a \textit{positional encoding}. The two most common choices for positional encoding are sinusoidal and codebook encodings. A codebook encoding is simply a lookup table, which maps each position in the sequence to a learned vector. Sinusoidal positional encodings were introduced in the original transformer paper \cite{attention-is-all-you-need} and are vectors of ($\sin$, $\cos$) pairs of different frequencies.
+Recall that attention is order independent. However, information about the order of inputs is often neccessary to perform a task. When order is important, the embedding layer will include an additional vector, which is added to the input vectors. This vector is called a \textit{positional encoding}. The two most common choices for positional encoding are sinusoidal and codebook encodings. A codebook encoding is simply a lookup table, which maps each position in the sequence to a (learned) vector. Sinusoidal positional encodings were introduced in the original transformer paper \cite{attention-is-all-you-need} and are vectors of ($\sin$, $\cos$) pairs of different frequencies.
 
 To form the input embedding vectors $\X$, the embedded `content' vectors are then typically added to the embedded `position' vectors.
 
@@ -193,14 +197,6 @@ Masked sequence modeling is a pretraining task which uses the first kind of mask
 
 \subsection{Causal Masking \& Auto-regressive pretraining}
 \label{ss:autoreg-pretraining}
-
-\begin{figure}
-    \centering
-    \includegraphics[]{figures/attn-1-self.pdf}
-    \caption[Self-attention]{Full self-attention (bi-directional attention), as used in transformer encoders. The blue shaded regions show which inputs are used to compute each output. In full self-attention, all inputs are used to compute all outputs.}
-    \hrulefill
-    \label{fig:self-attn}
-\end{figure}
 
 \begin{figure}
     \centering
@@ -251,7 +247,7 @@ A model trained with unified pretraining can be used as either a bidirectional o
     \label{fig:cross-attn}
 \end{figure}
 
-Instead of using a unified self-attention layer, it is possible to separate the dense and causal parts of the sequence into two separate layers, and connect the two with \textit{cross attention} layers, as shown in \Cref{fig:cross-attn}. This reduces the time and memory complexity of the attention matrix to $O(A^2 + B^2 + AB)$.
+Instead of using a unified self-attention layer, it is possible to separate the dense context and query sequences into two separate layers, and connect the two with \textit{cross attention} layers, as shown in \Cref{fig:cross-attn}. This reduces the time and memory complexity of the attention matrix to $O(A^2 + B^2 + AB)$. This is used for example in natural language translation models, where the context sequence is text tokens in the original language, and the query sequence is the produced tokens in the target language. The  is typically produced autoregressively.
 
 \section{Transformer Architectures}
 
@@ -260,7 +256,7 @@ When assembled into a complete model, different combinations of pretraining task
 \subsection{Encoder-only models}
 \label{ss:encoder-only}
 
-Arguably the simplest attention-based model architecture is encoder-only transformers, which are trained on a masked sequence modeling task. Masked sequence modeling is also called Masked Language Modeling (MLM), Masked Image Modeling (MIM), etc. depending on the domain. When used in natural language processing (NLP) they are known as bi-directional language models, because they allow information to flow in both directions. Examples are the BERT \cite{bert} language model family, Wav2Vec \cite{wav2vec} for speech, and SimMIM \cite{sim-mim} image model.
+Arguably the simplest attention-based model architecture is encoder-only transformers, which are trained on a masked sequence modeling task. Masked sequence modeling is also called Masked Language Modeling (MLM), Masked Image Modeling (MIM), etc. depending on the domain. When used in natural language processing (NLP) they are known as bi-directional language models, because they allow information to flow in both directions, as seen in \Cref{fig:self-attn}. Examples are the BERT \cite{bert} language model family, Wav2Vec \cite{wav2vec} for speech, and SimMIM \cite{sim-mim} image model.
 
 These models are typically used for sequence understanding tasks and classification tasks, however they \textit{can} also be used for generating sequences. The limitation of these kinds of models is that their pretraining task is not efficient for training these models to generate sequences. For generating sequences, a \textit{decoder} model is used, either in conjunction with an encoder, or simply as a decoder-only model.
 
@@ -309,11 +305,12 @@ In \cite{attention-is-all-you-need}, they train an encoder-decoder architecture 
     \label{fig:unified-attn}
 \end{figure}
 
-The final commonly seen transformer architecture are T5 models \cite{t5}, which uses unified attention. As we saw before in \Cref{ss:unified}, we can use the same attention matrix for both the encoded sequence and the decoded sequence. However, as discussed, this is less computationally efficient than using cross attention. So, why would this be done?
+The final commonly seen transformer architecture are T5 models \cite{t5}, which use unified attention. As we saw before in \Cref{ss:unified}, we can use the same attention matrix for both the encoded sequence and the decoded sequence. However, as discussed, this is less computationally efficient than using cross attention. So, why would this be done?
 
 The answer is that because a transformer shares weights across the sequence dimension, the resulting model will be capable of being used as either a bidirectional or unidirectional model, depending on the masking scheme used during inference. This is useful for \textit{transfer learning}, where we retrain (fine-tune) a model on a new, more specific task. Having a base model that has been trained with unified attention allows us to fine-tune the same model for both bidirectional and unidirectional tasks.
 
-These models are known as T5 models: \textbf{T}ext-\textbf{T}o-\textbf{T}ext \textbf{T}ransfer \textbf{T}ransformers \cite{t5}. Training a large T5 model is very computationally expensive, but the resulting models are extremely useful for transfer learning. Currently, many state of the art results are being achieved by fine-tuning these models.
+These models are known as T5 models: \textbf{T}ext-\textbf{T}o-\textbf{T}ext \textbf{T}ransfer \textbf{T}ransformers \cite{t5}. Training a large T5 model is very computationally expensive, but the resulting models are extremely useful for transfer learning. Their original purpose of these models was to work with a multiplicity of tasks
+expressed within the input text string. Now, many state of the art results are being achieved by fine-tuning these models.
 
 \section{Fast decoding}
 \label{sec:fast-decoding}

@@ -5,7 +5,7 @@ This chapter introduces neural network notation and concepts which will be used 
 
 \section{Introduction}
 
-Since Krizhevsky et al.'s AlexNet \cite{alexnet} in 2012, an incredible number of problems are now being solved with the help Artificial Neural Networks (NN), including image classification, translation of natural language, speech encoding, autonomous driving, computer-generated art and more. Any particular NN is not designed but discovered by gradient descent, where the parameters of the NN are iteratively improved with respect to a loss function and a dataset, which together define the training objective that the NN will learn to achieve.
+Since Krizhevsky et al.'s AlexNet \cite{alexnet} in 2012, an incredible number of problems are now being solved with the help Artificial Neural Networks (NN), including image classification, translation of natural language, speech encoding, autonomous driving, computer-generated art and more. The parameters of any particular NN are not designed but discovered by gradient descent, where they are iteratively improved with respect to a loss function and a dataset, which together define the training objective that the NN will learn to achieve.
 
 In this chapter, some notation will first be introduced and clarified so that it can be used later, and then an overview of the different aspects of neural networks will be given, such as different kinds of training objective.
 
@@ -32,7 +32,7 @@ It is customary to use the symbol $\phi$ for activation functions. Activation fu
 \end{equation*}
 In the above equation, the subscript $i$ shows that the function is applied \textit{independently} to each component of the vector $\x$.
 
-This notation also works for multiple dimensions, including when an operation is not applied independently across some dimension. For example, the following is the \textit{softmax} function can be written, which is a vector valued function, applied independently across the rows of a $B\times N$ matrix $\X$ (which is used in the definition of the attention operation in \Cref{C:transformers}).
+This notation also works for multiple dimensions, including when an operation is not applied independently across some dimension. For example, the following shows how the \textit{softmax} function can be written, which is a vector valued function, applied independently across the rows of a $B\times N$ matrix $\X$ (which is used in the definition of the attention operation in \Cref{C:transformers}).
 
 The softmax function is defined as:
 \begin{equation}
@@ -54,7 +54,7 @@ The term $\X_b$ refers to the $b$-th row of $X$ as a vector, as is common in ten
 
 Some examples of basic neural network operations are given below, to clarify the notation further.
 
-Let $N$ be the input dimensionality of a network, and $D$ the \textit{embedding} (or \textit{hidden} / \textit{latent}) dimensionality.  Let $\x \in \R^{N}$ be some input data embedded into an $N$-dimensional vector space. Let $W \in \R^{N \times D} $ be a matrix of learned weights, and let $\phi \colon \R \to \R$ be some non-linear function. Then, the computation done by one layer of a simple fully-connected neural network is represented as follows.
+Let $N$ be the input dimensionality of a network, and $D$ the \textit{embedding} (or \textit{hidden} / \textit{latent}) dimensionality (for the common case where a network has a common dimensionality across all hidden layers). Let $\x \in \R^{N}$ be some input data embedded into an $N$-dimensional vector space. Let $W \in \R^{N \times D} $ be a matrix of learned weights, and let $\phi \colon \R \to \R$ be some non-linear function. Then, the computation done by one layer of a simple fully-connected neural network is represented as follows.
 \begin{align}
 \label{eqn:mlp}
 \begin{aligned}
@@ -190,7 +190,7 @@ This function sums the error over the \textit{feature} dimension $D$ and average
 
 \section{Probabilistic models}
 
-When modeling data, it is often useful to have a \textit{probabilitic} model of the data, rather than a deterministic model. This allows the model to quantify uncertainty about the model outputs, produce multiple different samples, and avoid problems when the output distribution is multi-modal.
+When modeling data, it is often useful to have a \textit{probabilistic} model of the data, rather than a deterministic model. This allows the model to quantify uncertainty about the model outputs, produce multiple different samples, and avoid problems when the output distribution is multi-modal.
 
 To make a model probabilistic, we train it on a parameter-estimation task. This means the model now outputs the parameters of a probability distribution, and the loss function used corresponds to the functional form of that distribution. This is straightforward for scalar outputs, but when the data being modeled is high-dimensional, probabilistic models often become computationally expensive or intractable, and some different techniques or assumptions must be made.
 

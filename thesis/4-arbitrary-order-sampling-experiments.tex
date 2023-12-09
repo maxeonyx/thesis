@@ -1,7 +1,7 @@
 \chapter{Sampling Sequences In Any Order}
 \label{C:a-o-sampling}
 
-The unique properties of transformer models allows great flexibility in the kind of tasks that they can be trained to perform. This chapter shows that with minor changes to the model architecture and training procedure, a probabilistic transformer model is able to generate data in any order, including dynamically choosing the order of the data while sampling. The resulting model is a stochastic process on the dataset. Such a model is trained an evalueated 
+The unique properties of transformer models allows great flexibility in the kind of tasks that they can be trained to perform. This chapter shows that with minor changes to the model architecture and training procedure, a probabilistic transformer model is able to generate data in any order, including dynamically choosing the order of the data while sampling. The resulting model is a stochastic process on the dataset.
 
 \section{Introduction}
 
@@ -172,7 +172,7 @@ A transformer model was then trained on the described task. A table of training 
         Training steps & 20,000 \\
         \hline
     \end{tblr}
-    \caption[Training details of MNIST model]{Training details for the probabililistic 4-color model.}
+    \caption[Training details of MNIST model]{Training details for the probabilistic 4-color model.}
     \hrulefill
     \label{tab:training-details}
 \end{table}
@@ -282,7 +282,7 @@ If the model has perfectly learned the true distribution of the data, then all o
 
 When we select a dynamic ordering based on the model's predictions, we are introducing a bias into the model's predictions. Let us examine this bias in more detail.
 
-Let us imagine that the model outputs a gaussian =- more specifically it outputs estimates of the parameters $\mu$ and $\sigma$ of the true conditional distribution $p(y_i \mid x_i, y_{<i}, x_{<i})$. Then, also assume we can approximate the the fact that the model is imperfect by adding gaussian noise to the model's output, $\mu + \epsilon_\mu$ and $\sigma + \epsilon_\sigma$, where $\epsilon_\mu \sim \N(0, v_\mu)$ and $\epsilon_\sigma \sim \N(0, v_\sigma)$, for some small $v_\mu$ and $v_\sigma$. Let the model's output distribution be $q(i) = \N(y_i | x_i, y_{<i}, x_{<i}, \mu + \epsilon_\mu, \sigma + \epsilon_\sigma)$.
+Let us imagine that the model outputs a Gaussian -- more specifically it outputs estimates of the parameters $\mu$ and $\sigma$ of the true conditional distribution $p(y_i \mid x_i, y_{<i}, x_{<i})$. Then, also assume we can approximate the the fact that the model is imperfect by adding Gaussian noise to the model's output, $\mu + \epsilon_\mu$ and $\sigma + \epsilon_\sigma$, where $\epsilon_\mu \sim \N(0, v_\mu)$ and $\epsilon_\sigma \sim \N(0, v_\sigma)$, for some small $v_\mu$ and $v_\sigma$. Let the model's output distribution be $q(i) = \N(y_i | x_i, y_{<i}, x_{<i}, \mu + \epsilon_\mu, \sigma + \epsilon_\sigma)$.
 
 If we select the next position $i$ randomly, then when we sample $y_i \sim q(i)$, since the means of the error terms $\epsilon_\mu$ and $\epsilon_\sigma$ are both 0, the expected value of $y_i$ remains $\mu$.
 
